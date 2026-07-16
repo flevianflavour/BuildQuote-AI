@@ -1,0 +1,37 @@
+Material,Category,Unit,Price
+
+Cement,Civil,Bag,850
+
+Building Block,Masonry,Piece,75
+
+Machine Cut Stone,Masonry,Piece,65
+
+Sand,Civil,Ton,3500
+
+Ballast,Civil,Ton,3200
+
+Y8 Bar,Steel,Piece,780
+
+Y10 Bar,Steel,Piece,980
+
+Y12 Bar,Steel,Piece,1350
+
+Y16 Bar,Steel,Piece,2100
+
+Binding Wire,Steel,Roll,450
+
+Roof Sheet,Roofing,Piece,1450
+
+Timber 4x2,Roofing,Piece,850
+
+Ridge Cap,Roofing,Piece,750
+
+Paint 20L,Finishes,Tin,7800
+
+Primer 20L,Finishes,Tin,6200
+
+Tile 600x600,Finishes,Box,1950
+
+PVC Pipe 4",Plumbing,Piece,850
+
+Electrical Cable 2.5mm,Electrical,Roll,4200

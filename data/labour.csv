@@ -1,0 +1,21 @@
+Job,Category,DailyRate
+
+Site Engineer,Management,7000
+
+Foreman,Management,4500
+
+Mason,Skilled,2500
+
+Carpenter,Skilled,2300
+
+Steel Fixer,Skilled,2800
+
+Painter,Skilled,2200
+
+Electrician,Skilled,3500
+
+Plumber,Skilled,3200
+
+Welder,Skilled,3000
+
+Casual Labour,Unskilled,900

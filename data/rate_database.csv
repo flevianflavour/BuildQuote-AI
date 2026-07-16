@@ -1,0 +1,12 @@
+County,Category,Item,Unit,Rate,Supplier,Last_Updated
+Mombasa,Work Item,Excavation,m3,950,QS Schedule,2026-07-13
+Mombasa,Work Item,Hardcore,m3,3400,QS Schedule,2026-07-13
+Mombasa,Work Item,Blinding,m3,14500,QS Schedule,2026-07-13
+Mombasa,Work Item,Concrete,m3,16000,QS Schedule,2026-07-13
+Mombasa,Material,Cement,Bag,880,Bamburi,2026-07-13
+Mombasa,Material,Sand,m3,2500,Local Supplier,2026-07-13
+Mombasa,Material,Ballast,m3,3200,Local Supplier,2026-07-13
+Mombasa,Labour,Mason,Day,1800,Standard Rate,2026-07-13
+Mombasa,Labour,Labourer,Day,1200,Standard Rate,2026-07-13
+Nairobi,Work Item,Excavation,m3,1100,QS Schedule,2026-07-13
+Nairobi,Material,Cement,Bag,920,Bamburi,2026-07-13
