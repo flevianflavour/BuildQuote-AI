@@ -1,134 +1,684 @@
+"""
+BuildQuote AI
+
+Main Application Home Page
+
+Dynamic Version:
+- Company Branding
+- Logo
+- Features
+- Platform Overview
+"""
+
+
 import streamlit as st
+
+from config.settings_manager import get_company_settings
+
+
+
+# =====================================================
+# LOAD COMPANY SETTINGS
+# =====================================================
+
+
+company = get_company_settings()
+
+
+company_name = company.get(
+    "company_name",
+    "BuildQuote AI"
+)
+
+
+tagline = company.get(
+
+    "tagline",
+
+    "Professional Construction Estimation Platform"
+
+)
+
+
+logo = company.get(
+
+    "logo",
+
+    "assets/logo.png"
+
+)
+
+
 
 # =====================================================
 # PAGE CONFIGURATION
 # =====================================================
 
+
 st.set_page_config(
-    page_title="BuildQuote AI",
+
+    page_title=company_name,
+
     page_icon="🏗️",
-    layout="wide"
+
+    layout="wide",
+
+    initial_sidebar_state="expanded"
+
 )
 
+
+
 # =====================================================
-# HEADER
+# CUSTOM CSS
 # =====================================================
 
-st.title("🏗️ BuildQuote AI")
-st.subheader("AI-Powered Construction Estimation Software")
 
 st.markdown(
 """
-Generate professional **Bills of Quantities (BOQs)**, quotations and construction
-cost estimates for projects across Kenya.
+<style>
 
-BuildQuote AI helps contractors, engineers, architects and quantity surveyors
-prepare accurate construction estimates within minutes.
-"""
+#MainMenu {visibility:hidden;}
+
+footer {visibility:hidden;}
+
+header {visibility:hidden;}
+
+
+.block-container{
+
+    padding-top:1rem;
+
+    padding-bottom:1rem;
+
+}
+
+
+section[data-testid="stSidebar"]{
+
+    background-color:#f5f7fa;
+
+}
+
+
+
+div[data-testid="stMetric"]{
+
+    background:#f8f9fa;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    border:1px solid #e6e6e6;
+
+}
+
+
+</style>
+
+""",
+
+unsafe_allow_html=True
+
 )
 
-st.divider()
+
 
 # =====================================================
-# FEATURES
+# SIDEBAR
 # =====================================================
 
-st.header("🚀 Features")
 
-col1, col2, col3 = st.columns(3)
+with st.sidebar:
 
-with col1:
-    st.success("🏠 Foundation Estimation")
-    st.success("🧱 Walling Estimation")
-    st.success("🏗 Roof Estimation")
-    st.success("🚪 Doors & Windows")
 
-with col2:
-    st.success("📍 County-Based Pricing")
-    st.success("💰 Labour Costing")
-    st.success("🧾 VAT Calculation")
-    st.success("📑 Professional BOQs")
 
-with col3:
-    st.success("📄 PDF Quotations")
-    st.success("📊 Dashboard & Reports")
-    st.success("🤖 AI Cost Optimization")
-    st.success("☁ Future Cloud Database")
+    if company.get(
+        "show_logo",
+        True
+    ):
+
+
+        try:
+
+            st.image(
+                logo,
+                width=150
+            )
+
+        except:
+
+            st.title(
+                "🏗️ " + company_name
+            )
+
+
+
+    st.markdown(
+
+        f"## {company_name}"
+
+    )
+
+
+    st.caption(
+
+        tagline
+
+    )
+
+
+    st.success(
+
+        "Version 1.2"
+
+    )
+
+
+    st.divider()
+
+
+
+    st.markdown(
+
+        "### Platform Features"
+
+    )
+
+
+
+    features = [
+
+        "✅ Bills of Quantities (BOQ)",
+
+        "✅ County-Based Pricing",
+
+        "✅ Material Estimation",
+
+        "✅ Labour Costing",
+
+        "✅ VAT Calculation",
+
+        "✅ PDF Quotations",
+
+        "✅ Interactive Dashboard",
+
+        "✅ AI Recommendations"
+
+    ]
+
+
+
+    for feature in features:
+
+        st.write(feature)
+
+
+
+    st.divider()
+
+
+
+    st.info(
+
+        "🇰🇪 Designed for the Kenyan Construction Industry."
+
+    )
+
+
+
+# =====================================================
+# HERO SECTION
+# =====================================================
+
+
+st.title(
+
+    f"🏗️ {company_name}"
+
+)
+
+
+st.subheader(
+
+    tagline
+
+)
+
+
+
+st.write(
+
+f"""
+
+{company_name} enables contractors, engineers,
+architects and quantity surveyors to generate
+professional construction estimates, Bills of Quantities
+(BOQs), cost reports and quotations using intelligent
+county-based pricing.
+
+"""
+
+)
+
+
 
 st.divider()
+
+
+
+# =====================================================
+# QUICK METRICS
+# =====================================================
+
+
+m1, m2, m3, m4 = st.columns(4)
+
+
+
+m1.metric(
+
+    "Supported Counties",
+
+    "47"
+
+)
+
+
+m2.metric(
+
+    "Estimate Time",
+
+    "< 1 min"
+
+)
+
+
+m3.metric(
+
+    "Construction Modules",
+
+    "7"
+
+)
+
+
+m4.metric(
+
+    "Quotation Format",
+
+    "PDF"
+
+)
+
+
+
+st.divider()
+
+
+
+# =====================================================
+# MAIN FEATURES
+# =====================================================
+
+
+st.header(
+
+    "🚀 Core Features"
+
+)
+
+
+
+c1,c2,c3 = st.columns(3)
+
+
+
+with c1:
+
+
+    st.success(
+        "🏠 Residential Projects"
+    )
+
+    st.success(
+        "🏢 Commercial Projects"
+    )
+
+    st.success(
+        "📍 County-Specific Pricing"
+    )
+
+    st.success(
+        "📐 Building Dimension Analysis"
+    )
+
+
+
+with c2:
+
+
+    st.success(
+        "🧱 Material Quantification"
+    )
+
+    st.success(
+        "👷 Labour Estimation"
+    )
+
+    st.success(
+        "🧾 VAT Calculation"
+    )
+
+    st.success(
+        "💰 Cost Breakdown"
+    )
+
+
+
+with c3:
+
+
+    st.success(
+        "📄 Professional BOQs"
+    )
+
+    st.success(
+        "📑 PDF Quotations"
+    )
+
+    st.success(
+        "📊 Executive Dashboard"
+    )
+
+    st.success(
+        "🤖 AI Construction Insights"
+    )
+
+
+
+st.divider()
+
+
 
 # =====================================================
 # WORKFLOW
 # =====================================================
 
-st.header("📋 How It Works")
 
-st.markdown(
+st.header(
+
+    "⚙️ Simple Workflow"
+
+)
+
+
+
+step1,step2,step3 = st.columns(3)
+
+
+
+with step1:
+
+
+    st.info(
+        "1️⃣ Create New Estimate"
+    )
+
+
+    st.markdown(
 """
-### Step 1
-Create a **New Project**.
-
-### Step 2
-Enter:
-
-- Client Details
-- County
+- Client Information
+- Project Location
+- County Selection
 - Building Dimensions
-- Wall Material
-- Roof Type
+- House Type
+"""
+    )
 
-### Step 3
-BuildQuote AI automatically calculates:
+
+
+with step2:
+
+
+    st.info(
+        "2️⃣ Automatic Estimation"
+    )
+
+
+    st.markdown(
+"""
+Calculates:
 
 - Foundation
 - Walling
 - Roofing
-- Materials
+- Finishes
+- Electrical
+- Plumbing
 - Labour
 - VAT
-
-### Step 4
-Generate:
-
-- Professional BOQ
-- PDF Quotation
-- Cost Report
 """
+    )
+
+
+
+with step3:
+
+
+    st.info(
+        "3️⃣ Generate Reports"
+    )
+
+
+    st.markdown(
+"""
+Export:
+
+- Bill of Quantities
+- Cost Summary
+- Dashboard
+- PDF Quotation
+"""
+    )
+
+
+
+st.divider()
+
+
+
+# =====================================================
+# WHY CHOOSE
+# =====================================================
+
+
+st.header(
+
+    "⭐ Why Choose " + company_name + "?"
+
 )
 
+
+
+left,right = st.columns(2)
+
+
+
+with left:
+
+
+    st.markdown(
+"""
+### Benefits
+
+- Accurate quantity estimation
+
+- Faster project costing
+
+- County-based pricing
+
+- Professional BOQs
+
+- Automated VAT calculations
+
+- AI-powered recommendations
+
+- Easy PDF quotation generation
+"""
+    )
+
+
+
+with right:
+
+
+    st.markdown(
+"""
+### Ideal For
+
+✔ Quantity Surveyors
+
+✔ Civil Engineers
+
+✔ Building Contractors
+
+✔ Architects
+
+✔ Developers
+
+✔ Construction Firms
+
+✔ Students & Researchers
+"""
+    )
+
+
+
 st.divider()
 
+
+
 # =====================================================
-# MODULE STATUS
+# CAPABILITIES
 # =====================================================
 
-st.header("🛠 Project Progress")
 
-progress = {
-    "Foundation Estimator": "✅ Complete",
-    "Walling Estimator": "✅ Complete",
-    "Roof Estimator": "🚧 In Progress",
-    "Cost Engine": "✅ Complete",
-    "PDF Generator": "✅ Complete",
-    "Dashboard": "🚧 In Progress",
-    "Reports": "🚧 In Progress",
-    "AI Assistant": "⏳ Planned",
-}
+st.header(
 
-for module, status in progress.items():
-    st.write(f"**{module}** — {status}")
+    "📌 Current Capabilities"
+
+)
+
+
+
+cap1,cap2 = st.columns(2)
+
+
+
+with cap1:
+
+
+    st.write(
+        "✔ Foundation Estimation"
+    )
+
+    st.write(
+        "✔ Walling Estimation"
+    )
+
+    st.write(
+        "✔ Roofing Estimation"
+    )
+
+    st.write(
+        "✔ Doors & Windows"
+    )
+
+
+
+with cap2:
+
+
+    st.write(
+        "✔ Labour Costing"
+    )
+
+    st.write(
+        "✔ Material Costing"
+    )
+
+    st.write(
+        "✔ AI Recommendations"
+    )
+
+    st.write(
+        "✔ Professional Reports"
+    )
+
+
 
 st.divider()
 
+
+
 # =====================================================
-# QUICK START
+# START
 # =====================================================
+
+
+st.success(
+
+f"""
+
+👈 Select **New Estimate** from the left navigation menu
+to begin creating your construction estimate.
+
+"""
+
+)
+
+
 
 st.info(
+
 """
-👈 Select **New Project** from the left sidebar to begin creating
-a construction estimate.
+
+After generating an estimate, you can:
+
+
+• View the Dashboard
+
+• Review the BOQ
+
+• Analyze Costs
+
+• Download Professional PDF Quotations
+
+• Receive Intelligent Construction Recommendations
+
+
 """
+
 )
 
-st.caption("BuildQuote AI • Version 1.0 • Kenyan Construction Estimation Platform")
+
+
+st.divider()
+
+
+
+st.caption(
+
+f"""
+
+© 2026 {company_name}
+
+| Version 1.2 Presentation Edition
+
+| Developed by Flavian Otieno
+
+"""
+
+)

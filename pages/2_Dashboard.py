@@ -1,207 +1,842 @@
+"""
+BuildQuote AI
+
+Executive Construction Dashboard
+
+Features:
+- Project Summary
+- Cost Analysis
+- BOQ Review
+- Material Analysis
+- Labour Analysis
+- AI Recommendations
+- Project Health
+"""
+
+
 import streamlit as st
 import matplotlib.pyplot as plt
+import pandas as pd
+
+
+from services.ai_assistant import get_ai_recommendations
+from config.settings_manager import get_company_settings
+
+
+
+# ==================================================
+# LOAD SETTINGS
+# ==================================================
+
+company = get_company_settings()
+
+
+company_name = company.get(
+    "company_name",
+    "BuildQuote AI"
+)
+
+
+currency = company.get(
+    "currency",
+    "KES"
+)
+
+
 
 # ==================================================
 # PAGE CONFIGURATION
 # ==================================================
 
 st.set_page_config(
-    page_title="BuildQuote AI Dashboard",
+
+    page_title=f"{company_name} Dashboard",
+
     page_icon="📊",
-    layout="wide"
+
+    layout="wide",
+
+    initial_sidebar_state="expanded"
+
 )
 
-st.title("📊 BuildQuote AI Dashboard")
-st.caption("Professional Construction Estimation Dashboard")
+
+
+# ==================================================
+# CUSTOM CSS
+# ==================================================
+
+st.markdown(
+"""
+<style>
+
+#MainMenu{
+visibility:hidden;
+}
+
+footer{
+visibility:hidden;
+}
+
+header{
+visibility:hidden;
+}
+
+
+.block-container{
+padding-top:1rem;
+padding-bottom:1rem;
+}
+
+
+div[data-testid="stMetric"]{
+
+background:#f8f9fa;
+
+padding:15px;
+
+border-radius:12px;
+
+border:1px solid #e5e5e5;
+
+}
+
+</style>
+
+""",
+unsafe_allow_html=True
+)
+
+
+
+# ==================================================
+# SIDEBAR BRANDING
+# ==================================================
+
+with st.sidebar:
+
+
+    if company.get(
+        "show_logo",
+        True
+    ):
+
+        try:
+
+            st.image(
+                company.get(
+                    "logo",
+                    "assets/logo.png"
+                ),
+                width=140
+            )
+
+        except:
+
+            st.title(
+                "🏗️ " + company_name
+            )
+
+
+    st.markdown(
+
+        f"## {company_name}"
+
+    )
+
+
+    st.caption(
+
+        "Construction Intelligence Dashboard"
+
+    )
+
+
+    st.divider()
+
+
+
+    st.write(
+        "✅ BOQ Analysis"
+    )
+
+    st.write(
+        "✅ Material Tracking"
+    )
+
+    st.write(
+        "✅ Labour Costing"
+    )
+
+    st.write(
+        "✅ AI Recommendations"
+    )
+
+
 
 # ==================================================
 # CHECK SESSION
 # ==================================================
 
 if "estimate" not in st.session_state:
-    st.warning("No project estimate found.")
-    st.info("Go to **New Project** and generate an estimate first.")
+
+
+    st.warning(
+        "No project estimate found."
+    )
+
+
+    st.info(
+
+        "Please create a New Project before opening the Dashboard."
+
+    )
+
+
     st.stop()
 
+
+
 estimate = st.session_state["estimate"]
-project = estimate["project"]
+
+
+project = estimate.get(
+    "project",
+    {}
+)
+
+
+
+client_name = st.session_state.get(
+
+    "client_name",
+
+    "Customer"
+
+)
+
+
+
+project_name = st.session_state.get(
+
+    "project_name",
+
+    "Construction Project"
+
+)
+
+
+
+# ==================================================
+# HEADER
+# ==================================================
+
+st.title(
+
+    f"📊 {company_name} Dashboard"
+
+)
+
+
+st.caption(
+
+    "Professional Construction Estimation Dashboard"
+
+)
+
+
+st.divider()
+
+
 
 # ==================================================
 # EXECUTIVE SUMMARY
 # ==================================================
 
-st.header("🏗 Executive Summary")
+st.header(
 
-left, right = st.columns(2)
+    "🏗 Executive Summary"
+
+)
+
+
+
+left,right = st.columns(2)
+
+
 
 with left:
-    st.write(f"**County:** {project['County']}")
-    st.write(f"**Project Type:** {project['Project Type']}")
-    st.write(f"**House Type:** {project['House Type']}")
+
+
+    st.write(
+
+        f"**👤 Client:** {client_name}"
+
+    )
+
+
+    st.write(
+
+        f"**📌 Project:** {project_name}"
+
+    )
+
+
+    st.write(
+
+        f"**📍 County:** {project.get('County','')}"
+
+    )
+
+
+    st.write(
+
+        f"**🏠 Type:** {project.get('Project Type','')}"
+
+    )
+
+
 
 with right:
-    st.write(f"**Wall Material:** {project['Block Type']}")
-    st.write(f"**Roof Type:** {project['Roof Type']}")
-    st.write(f"**Bedrooms:** {project['Bedrooms']}")
+
+
+    st.write(
+
+        f"**🏡 House:** {project.get('House Type','')}"
+
+    )
+
+
+    st.write(
+
+        f"**🧱 Wall:** {project.get('Block Type','')}"
+
+    )
+
+
+    st.write(
+
+        f"**🏗 Roof:** {project.get('Roof Type','')}"
+
+    )
+
+
+    st.write(
+
+        f"**🛏 Bedrooms:** {project.get('Bedrooms','')}"
+
+    )
+
+
 
 st.divider()
 
+
+
 # ==================================================
-# COST SUMMARY
+# FINANCIAL OVERVIEW
 # ==================================================
 
-st.header("💰 Cost Summary")
+st.header(
 
-c1, c2, c3 = st.columns(3)
+    "💰 Financial Overview"
 
-c1.metric(
+)
+
+
+
+k1,k2,k3,k4 = st.columns(4)
+
+
+
+subtotal = estimate.get(
+    "subtotal",
+    0
+)
+
+
+vat = estimate.get(
+    "vat",
+    0
+)
+
+
+grand_total = estimate.get(
+    "grand_total",
+    0
+)
+
+
+
+k1.metric(
+
     "Subtotal",
-    f"KES {estimate['subtotal']:,.2f}"
+
+    f"{currency} {subtotal:,.0f}"
+
 )
 
-c2.metric(
+
+
+k2.metric(
+
     "VAT",
-    f"KES {estimate['vat']:,.2f}"
+
+    f"{currency} {vat:,.0f}"
+
 )
 
-c3.metric(
+
+
+k3.metric(
+
     "Grand Total",
-    f"KES {estimate['grand_total']:,.2f}"
+
+    f"{currency} {grand_total:,.0f}"
+
 )
+
+
+
+area = (
+
+    project.get(
+        "Length",
+        0
+    )
+
+    *
+
+    project.get(
+        "Width",
+        0
+    )
+
+)
+
+
+
+cost_per_m2 = 0
+
+
+if area > 0:
+
+    cost_per_m2 = grand_total / area
+
+
+
+k4.metric(
+
+    "Cost / m²",
+
+    f"{currency} {cost_per_m2:,.0f}"
+
+)
+
+
 
 st.divider()
 
+
+
 # ==================================================
-# PROJECT VALUE ANALYSIS
+# BUILDING STATISTICS
 # ==================================================
 
-st.header("📐 Building Statistics")
+st.header(
 
-length = project["Length"]
-width = project["Width"]
+    "📐 Building Statistics"
 
-area = length * width
+)
 
-cost_per_m2 = estimate["grand_total"] / area if area else 0
 
-a, b = st.columns(2)
 
-a.metric(
+wall_area = (
+
+    project.get(
+        "Length",
+        0
+    )
+
+    *
+
+    2
+
+    +
+
+    project.get(
+        "Width",
+        0
+    )
+
+    *
+
+    2
+
+)
+
+
+
+wall_area *= project.get(
+
+    "Wall Height",
+
+    3
+
+)
+
+
+
+b1,b2,b3,b4 = st.columns(4)
+
+
+
+b1.metric(
+
     "Floor Area",
-    f"{area:.2f} m²"
+
+    f"{area:.1f} m²"
+
 )
 
-b.metric(
-    "Cost per m²",
-    f"KES {cost_per_m2:,.2f}"
+
+
+b2.metric(
+
+    "Wall Area",
+
+    f"{wall_area:.1f} m²"
+
 )
+
+
+
+b3.metric(
+
+    "Cost / m²",
+
+    f"{currency} {cost_per_m2:,.0f}"
+
+)
+
+
+
+if area < 80:
+
+    duration="30-45 Days"
+
+elif area <150:
+
+    duration="45-75 Days"
+
+elif area <250:
+
+    duration="3-5 Months"
+
+else:
+
+    duration="6+ Months"
+
+
+
+b4.metric(
+
+    "Duration",
+
+    duration
+
+)
+
+
 
 st.divider()
 
+
+
 # ==================================================
-# COST BREAKDOWN
+# COST GRAPH
 # ==================================================
 
-st.header("📊 Cost Breakdown")
+st.header(
 
-labels = ["Subtotal", "VAT"]
+    "📊 Cost Analysis"
 
-values = [
-    estimate["subtotal"],
-    estimate["vat"]
+)
+
+
+
+labels=[
+
+    "Subtotal",
+
+    "VAT"
+
 ]
 
-fig, ax = plt.subplots(figsize=(6,4))
 
-ax.bar(labels, values)
+values=[
 
-ax.set_ylabel("KES")
-ax.set_title("Project Cost Summary")
+    subtotal,
+
+    vat
+
+]
+
+
+
+fig,ax = plt.subplots(
+
+    figsize=(8,4)
+
+)
+
+
+
+ax.bar(
+
+    labels,
+
+    values
+
+)
+
+
+
+ax.set_ylabel(
+
+    currency
+
+)
+
+
+ax.set_title(
+
+    "Project Cost Breakdown"
+
+)
+
+
 
 st.pyplot(fig)
 
-st.divider()
 
-# ==================================================
-# MATERIAL SUMMARY
-# ==================================================
-
-st.header("🧱 Materials")
-
-st.json(estimate["materials"])
 
 st.divider()
 
+
+
 # ==================================================
-# LABOUR SUMMARY
+# MATERIALS
 # ==================================================
 
-st.header("👷 Labour")
+st.header(
 
-st.json(estimate["labour"])
+    "🧱 Material Summary"
+
+)
+
+
+
+material_rows=[]
+
+
+
+for section,values in estimate.get(
+    "materials",
+    {}
+).items():
+
+
+    if isinstance(values,dict):
+
+
+        for material,qty in values.items():
+
+            material_rows.append(
+
+                {
+
+                "Section":section,
+
+                "Material":material,
+
+                "Quantity":qty
+
+                }
+
+            )
+
+
+
+if material_rows:
+
+
+    st.dataframe(
+
+        pd.DataFrame(material_rows),
+
+        use_container_width=True
+
+    )
+
+
+else:
+
+    st.info(
+
+        "No material breakdown available."
+
+    )
+
+
 
 st.divider()
+
+
 
 # ==================================================
 # BOQ
 # ==================================================
 
-st.header("📋 Bill of Quantities")
+st.header(
 
-st.dataframe(
-    estimate["boq"],
-    use_container_width=True
+    "📋 Bill of Quantities"
+
 )
 
+
+
+boq = estimate.get(
+
+    "boq",
+
+    []
+
+)
+
+
+
+if boq:
+
+
+    st.dataframe(
+
+        pd.DataFrame(boq),
+
+        use_container_width=True
+
+    )
+
+
+else:
+
+    st.info(
+
+        "No BOQ generated."
+
+    )
+
+
+
 st.divider()
 
-# ==================================================
-# MODULE STATUS
-# ==================================================
 
-st.header("🛠 Module Status")
-
-modules = {
-    "Foundation": True,
-    "Walling": True,
-    "Roof": True,
-    "Finishes": True,
-    "Electrical": True,
-    "Plumbing": True,
-    "Doors & Windows": True
-}
-
-for module, status in modules.items():
-    st.checkbox(module, value=status, disabled=True)
-
-st.divider()
 
 # ==================================================
-# AI RECOMMENDATIONS
+# AI INSIGHTS
 # ==================================================
 
-from services.ai_assistant import get_ai_recommendations
+st.header(
 
-st.header("🤖 BuildQuote AI Recommendations")
+    "🤖 AI Construction Insights"
+
+)
+
+
 
 recommendations = get_ai_recommendations(
-    estimate["project"],
+
+    project,
+
     estimate
+
 )
 
-for item in recommendations:
-    st.success(item)
+
+
+for rec in recommendations:
+
+    st.success(rec)
+
+
+
+st.divider()
+
+
 
 # ==================================================
-# EXPORT CENTRE
+# EXPORT
 # ==================================================
 
-st.header("📄 Export Centre")
+st.header(
 
-st.info(
-    "Generate a quotation from the New Project page."
+    "📄 Export Centre"
+
 )
+
+
+
+e1,e2,e3 = st.columns(3)
+
+
+
+with e1:
+
+    st.button(
+
+        "📄 Download PDF",
+
+        use_container_width=True
+
+    )
+
+
+with e2:
+
+    st.button(
+
+        "📊 Export Excel",
+
+        use_container_width=True
+
+    )
+
+
+with e3:
+
+    st.button(
+
+        "🖨 Print BOQ",
+
+        use_container_width=True
+
+    )
+
+
+
+st.divider()
+
+
 
 st.caption(
-    "© 2026 BuildQuote AI | Version 1.0"
+
+    f"© 2026 {company_name} | Construction Intelligence Platform"
+
+)
+
+
+st.caption(
+
+    "Developed by Flavian Otieno"
+
 )

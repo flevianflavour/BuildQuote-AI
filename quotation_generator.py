@@ -3,13 +3,17 @@ BuildQuote AI
 
 Quotation PDF Generator
 
-Generates:
+Features:
 - Company Header
+- Logo
 - Client Details
+- Project Details
 - BOQ
 - Materials Summary
 - Labour Summary
 - Cost Summary
+- VAT
+- Contingency
 - Signature Section
 """
 
@@ -34,8 +38,13 @@ import random
 import os
 
 
-from config.company_profile import COMPANY_PROFILE
+from config.settings_manager import get_company_settings
 
+
+
+# ==================================================
+# GENERATE PDF
+# ==================================================
 
 
 def generate_pdf(
@@ -46,9 +55,13 @@ def generate_pdf(
 
     client_name="Customer",
 
-    project_name="Construction Project",
+    project_name="Construction Project"
 
 ):
+
+
+    company = get_company_settings()
+
 
 
     doc = SimpleDocTemplate(
@@ -62,43 +75,74 @@ def generate_pdf(
 
     styles = getSampleStyleSheet()
 
+
     elements = []
 
 
 
-    # =====================================
-    # COMPANY HEADER
-    # =====================================
-
-
-    logo_path = COMPANY_PROFILE.get(
-        "logo",
-        "assets/logo.png"
+    currency = company.get(
+        "currency",
+        "KES"
     )
 
 
-    if os.path.exists(logo_path):
 
-        elements.append(
+    # ==================================================
+    # COMPANY HEADER
+    # ==================================================
 
-            Image(
 
-                logo_path,
+    if company.get(
+        "show_logo",
+        True
+    ):
 
-                width=80,
 
-                height=80
+        logo_path = company.get(
+
+            "logo",
+
+            "assets/logo.png"
+
+        )
+
+
+        if os.path.exists(logo_path):
+
+
+            elements.append(
+
+                Image(
+
+                    logo_path,
+
+                    width=80,
+
+                    height=80
+
+                )
 
             )
 
-        )
 
 
     elements.append(
 
         Paragraph(
 
-            f"<b><font size=22>{COMPANY_PROFILE.get('company_name','BuildQuote AI')}</font></b>",
+            f"""
+
+            <b>
+
+            <font size=22>
+
+            {company.get('company_name','BuildQuote AI')}
+
+            </font>
+
+            </b>
+
+            """,
 
             styles["Title"]
 
@@ -107,13 +151,17 @@ def generate_pdf(
     )
 
 
+
     elements.append(
 
         Paragraph(
 
-            COMPANY_PROFILE.get(
+            company.get(
+
                 "tagline",
+
                 "Construction Estimation & BOQ System"
+
             ),
 
             styles["Normal"]
@@ -129,31 +177,38 @@ def generate_pdf(
 
 
 
+    # ==================================================
     # COMPANY DETAILS
+    # ==================================================
 
 
-    company_table = Table(
+    company_details = Table(
 
         [
 
             [
+                "Contractor",
+                company.get("contractor","")
+            ],
+
+            [
                 "Phone",
-                COMPANY_PROFILE.get("phone","")
+                company.get("phone","")
             ],
 
             [
                 "Email",
-                COMPANY_PROFILE.get("email","")
+                company.get("email","")
             ],
 
             [
                 "Location",
-                COMPANY_PROFILE.get("location","")
+                company.get("location","")
             ],
 
             [
                 "Registration",
-                COMPANY_PROFILE.get("registration","")
+                company.get("registration","")
             ]
 
         ],
@@ -163,20 +218,33 @@ def generate_pdf(
     )
 
 
-    company_table.setStyle(
+
+    company_details.setStyle(
 
         TableStyle([
 
-            ("GRID",(0,0),(-1,-1),0.5,colors.black),
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                0.5,
+                colors.black
+            ),
 
-            ("BACKGROUND",(0,0),(0,-1),colors.lightgrey)
+            (
+                "BACKGROUND",
+                (0,0),
+                (0,-1),
+                colors.lightgrey
+            )
 
         ])
 
     )
 
 
-    elements.append(company_table)
+
+    elements.append(company_details)
 
     elements.append(
         Spacer(1,20)
@@ -184,9 +252,9 @@ def generate_pdf(
 
 
 
-    # =====================================
-    # PROJECT DETAILS
-    # =====================================
+    # ==================================================
+    # PROJECT INFORMATION
+    # ==================================================
 
 
     project = estimate.get(
@@ -195,74 +263,116 @@ def generate_pdf(
     )
 
 
-    details = [
+
+    quotation_number = (
+
+        "BQA-"
+
+        +
+
+        str(
+            random.randint(
+                1000,
+                9999
+            )
+        )
+
+    )
+
+
+
+    project_details = Table(
 
         [
-            "Quotation No",
-            f"BQA-{random.randint(1000,9999)}"
+
+            [
+                "Quotation No",
+                quotation_number
+            ],
+
+            [
+                "Date",
+                datetime.now().strftime(
+                    "%d %B %Y"
+                )
+            ],
+
+            [
+                "Client",
+                client_name
+            ],
+
+            [
+                "Project",
+                project_name
+            ],
+
+            [
+                "County",
+                project.get(
+                    "county",
+                    ""
+                )
+            ],
+
+            [
+                "House Type",
+                project.get(
+                    "house_type",
+                    ""
+                )
+            ],
+
+            [
+                "Roof Type",
+                project.get(
+                    "roof_type",
+                    ""
+                )
+            ],
+
+            [
+                "Wall Material",
+                project.get(
+                    "wall_material",
+                    ""
+                )
+            ]
+
         ],
-
-        [
-            "Date",
-            datetime.now().strftime("%d %B %Y")
-        ],
-
-        [
-            "Client",
-            client_name
-        ],
-
-        [
-            "Project",
-            project_name
-        ],
-
-        [
-            "County",
-            project.get("County","")
-        ],
-
-        [
-            "House Type",
-            project.get("House Type","")
-        ],
-
-        [
-            "Roof Type",
-            project.get("Roof Type","")
-        ],
-
-        [
-            "Wall Material",
-            project.get("Block Type","")
-        ]
-
-    ]
-
-
-    table = Table(
-
-        details,
 
         colWidths=[150,250]
 
     )
 
 
-    table.setStyle(
+
+    project_details.setStyle(
 
         TableStyle([
 
-            ("GRID",(0,0),(-1,-1),0.5,colors.black),
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                0.5,
+                colors.black
+            ),
 
-            ("BACKGROUND",(0,0),(0,-1),colors.lightgrey)
+            (
+                "BACKGROUND",
+                (0,0),
+                (0,-1),
+                colors.lightgrey
+            )
 
         ])
 
     )
 
 
-    elements.append(table)
+
+    elements.append(project_details)
 
     elements.append(
         Spacer(1,20)
@@ -270,9 +380,9 @@ def generate_pdf(
 
 
 
-    # =====================================
+    # ==================================================
     # BOQ
-    # =====================================
+    # ==================================================
 
 
     elements.append(
@@ -288,11 +398,12 @@ def generate_pdf(
     )
 
 
+
     boq_rows = [
 
         [
             "Description",
-            "Qty",
+            "Quantity",
             "Unit",
             "Rate",
             "Amount"
@@ -301,17 +412,31 @@ def generate_pdf(
     ]
 
 
-    for item in estimate.get("boq",[]):
+
+    for item in estimate.get(
+        "boq",
+        []
+    ):
+
 
         boq_rows.append(
 
             [
 
-                item.get("description",""),
+                item.get(
+                    "description",
+                    ""
+                ),
 
-                item.get("quantity",""),
+                item.get(
+                    "quantity",
+                    ""
+                ),
 
-                item.get("unit",""),
+                item.get(
+                    "unit",
+                    ""
+                ),
 
                 f"{item.get('rate',0):,.2f}",
 
@@ -320,6 +445,7 @@ def generate_pdf(
             ]
 
         )
+
 
 
     boq_table = Table(
@@ -331,19 +457,37 @@ def generate_pdf(
     )
 
 
+
     boq_table.setStyle(
 
         TableStyle([
 
-            ("GRID",(0,0),(-1,-1),0.5,colors.black),
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                0.5,
+                colors.black
+            ),
 
-            ("BACKGROUND",(0,0),(-1,0),colors.darkblue),
+            (
+                "BACKGROUND",
+                (0,0),
+                (-1,0),
+                colors.darkblue
+            ),
 
-            ("TEXTCOLOR",(0,0),(-1,0),colors.white)
+            (
+                "TEXTCOLOR",
+                (0,0),
+                (-1,0),
+                colors.white
+            )
 
         ])
 
     )
+
 
 
     elements.append(boq_table)
@@ -354,9 +498,9 @@ def generate_pdf(
 
 
 
-    # =====================================
+    # ==================================================
     # MATERIAL SUMMARY
-    # =====================================
+    # ==================================================
 
 
     elements.append(
@@ -372,20 +516,23 @@ def generate_pdf(
     )
 
 
+
     material_rows = [
 
         [
             "Section",
-            "Materials"
+            "Details"
         ]
 
     ]
+
 
 
     for section,data in estimate.get(
         "materials",
         {}
     ).items():
+
 
         material_rows.append(
 
@@ -400,14 +547,23 @@ def generate_pdf(
         )
 
 
-    material_table = Table(material_rows)
+
+    material_table = Table(
+        material_rows
+    )
 
 
     material_table.setStyle(
 
         TableStyle([
 
-            ("GRID",(0,0),(-1,-1),0.5,colors.black)
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                0.5,
+                colors.black
+            )
 
         ])
 
@@ -422,28 +578,74 @@ def generate_pdf(
 
 
 
-    # =====================================
+    # ==================================================
     # COST SUMMARY
-    # =====================================
+    # ==================================================
 
 
-    summary = Table(
+    subtotal = estimate.get(
+        "subtotal",
+        0
+    )
+
+
+    vat = estimate.get(
+        "vat",
+        subtotal * company.get(
+            "vat_rate",
+            16
+        ) / 100
+    )
+
+
+    contingency = estimate.get(
+        "contingency",
+        subtotal * company.get(
+            "contingency",
+            5
+        ) / 100
+    )
+
+
+
+    total = (
+
+        subtotal
+
+        +
+
+        vat
+
+        +
+
+        contingency
+
+    )
+
+
+
+    cost_table = Table(
 
         [
 
             [
                 "Subtotal",
-                f"KES {estimate.get('subtotal',0):,.2f}"
+                f"{currency} {subtotal:,.2f}"
             ],
 
             [
-                "VAT 16%",
-                f"KES {estimate.get('vat',0):,.2f}"
+                "VAT",
+                f"{currency} {vat:,.2f}"
+            ],
+
+            [
+                "Contingency",
+                f"{currency} {contingency:,.2f}"
             ],
 
             [
                 "TOTAL PROJECT COST",
-                f"KES {estimate.get('grand_total',0):,.2f}"
+                f"{currency} {total:,.2f}"
             ]
 
         ]
@@ -451,20 +653,34 @@ def generate_pdf(
     )
 
 
-    summary.setStyle(
+
+    cost_table.setStyle(
 
         TableStyle([
 
-            ("GRID",(0,0),(-1,-1),0.5,colors.black),
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                0.5,
+                colors.black
+            ),
 
-            ("BACKGROUND",(0,2),(-1,2),colors.lightgrey)
+            (
+                "BACKGROUND",
+                (0,3),
+                (-1,3),
+                colors.lightgrey
+            )
 
         ])
 
     )
 
 
-    elements.append(summary)
+    elements.append(cost_table)
+
+
 
     elements.append(
         Spacer(1,25)
@@ -472,64 +688,92 @@ def generate_pdf(
 
 
 
-    # =====================================
-    # SIGNATURE
-    # =====================================
+    # ==================================================
+    # SIGNATURE SECTION
+    # ==================================================
 
 
-    signature = Table(
+    if company.get(
+        "show_signature",
+        True
+    ):
 
-        [
 
-            [
-                "Prepared By",
-                "Client Approval"
-            ],
-
-            [
-                "________________",
-                "________________"
-            ],
+        signature = Table(
 
             [
-                COMPANY_PROFILE.get(
-                    "contractor",
-                    "Contractor"
-                ),
 
-                client_name
+                [
+                    "Prepared By",
+                    "Client Approval"
+                ],
+
+                [
+                    "________________",
+                    "________________"
+                ],
+
+                [
+                    company.get(
+                        "contractor",
+                        "Contractor"
+                    ),
+
+                    client_name
+
+                ]
+
             ]
 
-        ]
+        )
+
+
+        signature.setStyle(
+
+            TableStyle([
+
+                (
+                    "GRID",
+                    (0,0),
+                    (-1,-1),
+                    0.5,
+                    colors.black
+                )
+
+            ])
+
+        )
+
+
+        elements.append(signature)
+
+
+
+    elements.append(
+
+        Spacer(1,15)
 
     )
-
-
-    signature.setStyle(
-
-        TableStyle([
-
-            ("GRID",(0,0),(-1,-1),0.5,colors.black)
-
-        ])
-
-    )
-
-
-    elements.append(signature)
 
 
     elements.append(
 
         Paragraph(
 
-            f"Generated automatically by {COMPANY_PROFILE.get('company_name','BuildQuote AI')}",
+            f"""
+
+            Generated automatically by
+
+            {company.get('company_name','BuildQuote AI')}
+
+            """,
 
             styles["Italic"]
 
         )
 
     )
+
 
 
     doc.build(elements)
