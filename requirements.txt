@@ -1,6 +1,7 @@
-
 streamlit
 pandas
+matplotlib
 reportlab
 openpyxl
-sqlite3
+numpy
+Pillow
