@@ -4,7 +4,7 @@ BuildQuote AI
 New Estimate
 Professional Version 1.1
 """
-
+import pandas as pd
 import streamlit as st
 from calculator import generate_estimate
 from quotation_generator import generate_pdf
@@ -392,21 +392,48 @@ if "estimate" in st.session_state:
             "📈 Analysis",
             "📄 Export"
         ]
+    )# =====================================================
+# BOQ
+# =====================================================
+
+with tab1:
+
+    st.subheader("📋 Bill of Quantities")
+
+
+    boq = estimate.get(
+        "boq",
+        []
     )
 
-    # =====================================================
-    # BOQ
-    # =====================================================
 
-    with tab1:
+    if boq:
 
-        st.subheader("Bill of Quantities")
+
+        boq_df = pd.DataFrame(
+            boq
+        )
+
 
         st.dataframe(
-            estimate["boq"],
+
+            boq_df,
+
             use_container_width=True,
+
             hide_index=True
+
         )
+
+
+    else:
+
+
+        st.info(
+            "No BOQ items generated."
+        )
+
+
 
     # =====================================================
     # MATERIALS
@@ -579,216 +606,318 @@ if "estimate" in st.session_state:
     st.success(
         "Always allow a contingency budget of 5–10% for unexpected costs."
     )# =====================================================
+# =====================================================
 # PROJECT HEALTH SCORE
 # =====================================================
 
-st.divider()
+if "estimate" in st.session_state:
 
-st.header("🏆 Project Health Score")
+    estimate = st.session_state["estimate"]
 
-score = 100
+    project = estimate["project"]
 
-warnings = []
 
-if estimate["grand_total"] > 5000000:
-    score -= 10
-    warnings.append("High project budget.")
+    st.divider()
 
-if project["Roof Type"] == "Concrete Roof":
-    score -= 5
-    warnings.append("Concrete roofing increases structural load.")
+    st.header("🏆 Project Health Score")
 
-if project["Block Type"] == "Coral Blocks":
-    score -= 5
-    warnings.append("Coral blocks require proper moisture protection.")
 
-if project["County"] in ["Mombasa", "Kilifi", "Kwale"]:
+    score = 100
 
-    warnings.append(
-        "Coastal environment detected."
+    warnings = []
+
+
+    if estimate.get("grand_total",0) > 5000000:
+
+        score -= 10
+
+        warnings.append(
+            "High project budget."
+        )
+
+
+    if project.get("Roof Type") == "Concrete Roof":
+
+        score -= 5
+
+        warnings.append(
+            "Concrete roofing increases structural load."
+        )
+
+
+    if project.get("Block Type") == "Coral Blocks":
+
+        score -= 5
+
+        warnings.append(
+            "Coral blocks require proper moisture protection."
+        )
+
+
+    if project.get("County") in [
+
+        "Mombasa",
+        "Kilifi",
+        "Kwale"
+
+    ]:
+
+        warnings.append(
+            "Coastal environment detected."
+        )
+
+
+
+    st.progress(
+        score / 100
     )
 
-st.progress(score/100)
 
-st.metric(
-    "Overall Project Score",
-    f"{score}/100"
-)
+    st.metric(
 
-if len(warnings) == 0:
+        "Overall Project Score",
 
-    st.success(
-        "Excellent project configuration."
+        f"{score}/100"
+
     )
 
-else:
 
-    for item in warnings:
 
-        st.warning(item)
+    if len(warnings)==0:
 
-# =====================================================
-# PROJECT TIMELINE
-# =====================================================
+        st.success(
+            "Excellent project configuration."
+        )
 
-st.divider()
+    else:
 
-st.header("📅 Estimated Timeline")
+        for item in warnings:
 
-area = project["Length"] * project["Width"]
+            st.warning(item)
 
-if area < 80:
 
-    duration = "30 - 45 Days"
 
-elif area < 150:
+    # =====================================================
+    # PROJECT TIMELINE
+    # =====================================================
 
-    duration = "45 - 75 Days"
 
-elif area < 250:
+    st.divider()
 
-    duration = "3 - 5 Months"
-
-else:
-
-    duration = "6+ Months"
-
-t1, t2 = st.columns(2)
-
-t1.metric(
-    "Estimated Duration",
-    duration
-)
-
-t2.metric(
-    "Floor Area",
-    f"{area:.1f} m²"
-)
-
-# =====================================================
-# MATERIAL DISTRIBUTION
-# =====================================================
-
-st.divider()
-
-st.header("📊 Material Distribution")
-
-import matplotlib.pyplot as plt
-
-materials = estimate["materials"]
-
-labels = []
-values = []
-
-for k, v in materials.items():
-
-    if isinstance(v, (int, float)):
-
-        labels.append(k.replace("_", " ").title())
-
-        values.append(v)
-
-if len(values) > 0:
-
-    fig, ax = plt.subplots(figsize=(7,5))
-
-    ax.pie(
-        values,
-        labels=labels,
-        autopct="%1.1f%%",
-        startangle=90
+    st.header(
+        "📅 Estimated Timeline"
     )
 
-    ax.set_title(
-        "Material Distribution"
+
+    area = (
+
+        project.get("Length",0)
+
+        *
+
+        project.get("Width",0)
+
     )
 
-    st.pyplot(fig)
 
-# =====================================================
-# SMART CONSTRUCTION TIPS
-# =====================================================
+    if area < 80:
 
-st.divider()
+        duration="30 - 45 Days"
 
-st.header("💡 Smart Construction Tips")
+    elif area <150:
 
-tips = [
+        duration="45 - 75 Days"
 
-    "Purchase materials in phases to reduce storage losses.",
+    elif area <250:
 
-    "Compare supplier quotations before procurement.",
+        duration="3 - 5 Months"
 
-    "Inspect materials upon delivery.",
+    else:
 
-    "Allow a contingency budget of 5–10%.",
+        duration="6+ Months"
 
-    "Hire qualified artisans for structural work.",
 
-    "Follow Kenyan Building Code requirements."
 
-]
+    t1,t2 = st.columns(2)
 
-for tip in tips:
 
-    st.success(tip)
+    t1.metric(
+        "Estimated Duration",
+        duration
+    )
 
-# =====================================================
-# NEXT STEPS
-# =====================================================
 
-st.divider()
+    t2.metric(
+        "Floor Area",
+        f"{area:.1f} m²"
+    )
 
-st.header("🚀 Next Steps")
 
-step1, step2, step3 = st.columns(3)
 
-with step1:
+    # =====================================================
+    # MATERIAL DISTRIBUTION
+    # =====================================================
 
-    st.info(
-        """
+
+    st.divider()
+
+    st.header(
+        "📊 Material Distribution"
+    )
+
+
+    materials = estimate.get(
+        "materials",
+        {}
+    )
+
+
+    labels=[]
+
+    values=[]
+
+
+    for k,v in materials.items():
+
+        if isinstance(v,(int,float)):
+
+            labels.append(
+                k.replace("_"," ").title()
+            )
+
+            values.append(v)
+
+
+
+    if values:
+
+
+        fig,ax = plt.subplots(
+            figsize=(7,5)
+        )
+
+
+        ax.pie(
+
+            values,
+
+            labels=labels,
+
+            autopct="%1.1f%%"
+
+        )
+
+
+        ax.set_title(
+            "Material Distribution"
+        )
+
+
+        st.pyplot(fig)
+
+
+
+    # =====================================================
+    # SMART TIPS
+    # =====================================================
+
+
+    st.divider()
+
+    st.header(
+        "💡 Smart Construction Tips"
+    )
+
+
+    tips=[
+
+        "Purchase materials in phases to reduce storage losses.",
+
+        "Compare supplier quotations before procurement.",
+
+        "Inspect materials upon delivery.",
+
+        "Allow a contingency budget of 5–10%.",
+
+        "Hire qualified artisans for structural work.",
+
+        "Follow Kenyan Building Code requirements."
+
+    ]
+
+
+    for tip in tips:
+
+        st.success(tip)
+
+
+
+    # =====================================================
+    # NEXT STEPS
+    # =====================================================
+
+
+    st.divider()
+
+    st.header(
+        "🚀 Next Steps"
+    )
+
+
+    step1,step2,step3 = st.columns(3)
+
+
+    with step1:
+
+        st.info(
+"""
 ### 1
 
-Review the BOQ
+Review BOQ
 
 Verify quantities before procurement.
 """
-    )
+        )
 
-with step2:
 
-    st.info(
-        """
+    with step2:
+
+        st.info(
+"""
 ### 2
 
 Download PDF
 
-Generate a professional quotation.
+Generate professional quotation.
 """
-    )
+        )
 
-with step3:
 
-    st.info(
-        """
+    with step3:
+
+        st.info(
+"""
 ### 3
 
 Start Construction
 
 Begin procurement and scheduling.
 """
+        )
+
+
+
+    st.divider()
+
+
+    st.success(
+        "✔ Estimate Generated Successfully using BuildQuote AI Professional Estimation Engine"
     )
 
-# =====================================================
-# BUILDQUOTE QUALITY BADGE
-# =====================================================
 
-st.divider()
-
-st.success(
-    "✔ Estimate Generated Successfully using BuildQuote AI Professional Estimation Engine"
-)
 
 st.caption(
-    "© 2026 BuildQuote AI • Developed by Flavian Otieno • Version 1.1"
+
+"© 2026 BuildQuote AI • Developed by Flavian Otieno • Version 1.1"
+
 )

@@ -3,86 +3,160 @@ from datetime import datetime
 
 class Project:
 
+
     def __init__(
+
         self,
+
         client_name,
+
         project_name,
+
         county,
+
         project_type,
+
         house_type,
+
         floors,
+
         length,
+
         width,
+
         height,
+
         wall_material,
+
         roof_type
+
     ):
 
-        # -----------------------------
+
+        # =============================
         # Project Information
-        # -----------------------------
+        # =============================
 
         self.client_name = client_name
-        self.project_name = project_name
 
-        self.project_type = project_type
-        self.house_type = house_type
+        self.project_name = project_name
 
         self.county = county
 
-        # -----------------------------
+        self.project_type = project_type
+
+        self.house_type = house_type
+
+
+
+        # =============================
         # Building Details
-        # -----------------------------
+        # =============================
 
         self.floors = floors
 
         self.length = length
+
         self.width = width
+
         self.height = height
 
+
         self.wall_material = wall_material
+
         self.roof_type = roof_type
 
-        # -----------------------------
+
+
+        # =============================
         # System Information
-        # -----------------------------
+        # =============================
 
         self.created_at = datetime.now()
 
+
         self.project_id = (
+
             f"BQ-{self.created_at.strftime('%Y%m%d%H%M%S')}"
+
         )
 
-    # ---------------------------------
+
+
+    # =================================
+    # Convert Project To Dictionary
+    # =================================
 
     def summary(self):
 
+
         return {
 
-            "Project ID": self.project_id,
 
-            "Client": self.client_name,
+            "project_id":
 
-            "Project": self.project_name,
+            self.project_id,
 
-            "County": self.county,
 
-            "Project Type": self.project_type,
+            "client_name":
 
-            "House Type": self.house_type,
+            self.client_name,
 
-            "Floors": self.floors,
 
-            "Length": self.length,
+            "project_name":
 
-            "Width": self.width,
+            self.project_name,
 
-            "Height": self.height,
 
-            "Wall Material": self.wall_material,
+            "county":
 
-            "Roof Type": self.roof_type,
+            self.county,
 
-            "Created": self.created_at.strftime("%d-%m-%Y %H:%M")
+
+            "project_type":
+
+            self.project_type,
+
+
+            "house_type":
+
+            self.house_type,
+
+
+            "floors":
+
+            self.floors,
+
+
+            "length":
+
+            self.length,
+
+
+            "width":
+
+            self.width,
+
+
+            "height":
+
+            self.height,
+
+
+            "wall_material":
+
+            self.wall_material,
+
+
+            "roof_type":
+
+            self.roof_type,
+
+
+            "created_at":
+
+            self.created_at.strftime(
+                "%d-%m-%Y %H:%M"
+            )
 
         }

@@ -364,9 +364,31 @@ st.divider()
 
 st.header("📋 Current Configuration")
 
+settings_table = []
 
-st.json(
-    st.session_state.company_profile
+
+for key, value in st.session_state.company_profile.items():
+
+    settings_table.append(
+
+        {
+            "Setting": key.replace("_", " ").title(),
+
+            "Value": value
+
+        }
+
+    )
+
+
+st.dataframe(
+
+    settings_table,
+
+    use_container_width=True,
+
+    hide_index=True
+
 )
 
 
