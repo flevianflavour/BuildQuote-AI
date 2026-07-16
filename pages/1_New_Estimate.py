@@ -4,11 +4,15 @@ BuildQuote AI
 New Estimate
 Professional Version 1.1
 """
+
 import pandas as pd
+import matplotlib.pyplot as plt
 import streamlit as st
+
 from calculator import generate_estimate
 from quotation_generator import generate_pdf
 from config.counties import COUNTIES
+
 
 # =====================================================
 # PAGE CONFIGURATION
@@ -19,6 +23,7 @@ st.set_page_config(
     page_icon="🏗️",
     layout="wide"
 )
+
 
 # =====================================================
 # CUSTOM CSS
@@ -36,14 +41,22 @@ header {visibility:hidden;}
 }
 
 div[data-testid="stMetric"]{
+
     background:#f8f9fa;
+
     border-radius:10px;
+
     padding:15px;
+
     border:1px solid #e6e6e6;
+
 }
 
 </style>
-""", unsafe_allow_html=True)
+""",
+unsafe_allow_html=True)
+
+
 
 # =====================================================
 # HEADER
@@ -57,13 +70,17 @@ st.caption(
 
 st.divider()
 
+
+
 # =====================================================
 # CLIENT INFORMATION
 # =====================================================
 
 st.header("👤 Client Information")
 
-left, right = st.columns(2)
+
+left,right = st.columns(2)
+
 
 with left:
 
@@ -72,6 +89,7 @@ with left:
         placeholder="Enter client name"
     )
 
+
 with right:
 
     project_name = st.text_input(
@@ -79,13 +97,17 @@ with right:
         placeholder="Residential House"
     )
 
+
+
 # =====================================================
-# PROJECT CONFIGURATION
+# PROJECT DETAILS
 # =====================================================
 
 st.header("🏠 Project Details")
 
-c1, c2, c3 = st.columns(3)
+
+c1,c2,c3 = st.columns(3)
+
 
 with c1:
 
@@ -93,6 +115,7 @@ with c1:
         "County",
         COUNTIES
     )
+
 
 with c2:
 
@@ -103,6 +126,7 @@ with c2:
             "Commercial"
         ]
     )
+
 
 with c3:
 
@@ -119,13 +143,17 @@ with c3:
         ]
     )
 
+
+
 # =====================================================
 # MATERIALS
 # =====================================================
 
 st.header("🧱 Construction Materials")
 
-m1, m2 = st.columns(2)
+
+m1,m2 = st.columns(2)
+
 
 with m1:
 
@@ -139,6 +167,7 @@ with m1:
         ]
     )
 
+
 with m2:
 
     roof_type = st.selectbox(
@@ -151,13 +180,17 @@ with m2:
         ]
     )
 
+
+
 # =====================================================
 # DIMENSIONS
 # =====================================================
 
 st.header("📐 Building Dimensions")
 
-d1, d2, d3 = st.columns(3)
+
+d1,d2,d3 = st.columns(3)
+
 
 with d1:
 
@@ -167,6 +200,7 @@ with d1:
         value=10.0
     )
 
+
 with d2:
 
     width = st.number_input(
@@ -174,6 +208,7 @@ with d2:
         min_value=1.0,
         value=12.0
     )
+
 
 with d3:
 
@@ -183,13 +218,17 @@ with d3:
         value=3.0
     )
 
+
+
 # =====================================================
 # OPENINGS
 # =====================================================
 
 st.header("🚪 Openings")
 
-o1, o2 = st.columns(2)
+
+o1,o2 = st.columns(2)
+
 
 with o1:
 
@@ -199,6 +238,7 @@ with o1:
         value=2
     )
 
+
 with o2:
 
     windows = st.number_input(
@@ -207,7 +247,11 @@ with o2:
         value=4
     )
 
+
+
 st.divider()
+
+
 
 # =====================================================
 # PROJECT PREVIEW
@@ -215,21 +259,32 @@ st.divider()
 
 st.header("📋 Project Preview")
 
-p1, p2, p3, p4 = st.columns(4)
 
-p1.metric("County", county)
-p2.metric("House", house_type)
-p3.metric("Wall", wall_material)
-p4.metric("Roof", roof_type)
+p1,p2,p3,p4 = st.columns(4)
+
+
+p1.metric("County",county)
+
+p2.metric("House",house_type)
+
+p3.metric("Wall",wall_material)
+
+p4.metric("Roof",roof_type)
+
 
 floor_area = length * width
+
 
 st.metric(
     "Estimated Floor Area",
     f"{floor_area:.1f} m²"
 )
 
+
+
 st.divider()
+
+
 
 # =====================================================
 # GENERATE ESTIMATE
@@ -241,17 +296,23 @@ if st.button(
     type="primary"
 ):
 
-    # Validation
 
-    if client_name.strip() == "":
-        st.error("Please enter the Client Name.")
+    if client_name.strip()=="":
+        st.error("Please enter Client Name")
         st.stop()
 
-    if project_name.strip() == "":
-        st.error("Please enter the Project Name.")
+
+
+    if project_name.strip()=="":
+        st.error("Please enter Project Name")
         st.stop()
 
-    with st.spinner("BuildQuote AI is calculating the estimate..."):
+
+
+    with st.spinner(
+        "BuildQuote AI is calculating..."
+    ):
+
 
         estimate = generate_estimate(
 
@@ -277,26 +338,52 @@ if st.button(
 
         )
 
+
     st.session_state["estimate"] = estimate
+
     st.session_state["client_name"] = client_name
+
     st.session_state["project_name"] = project_name
 
-    st.success("✅ Construction estimate generated successfully.")
 
-# =====================================================
+    st.success(
+        "✅ Construction estimate generated successfully."
+    )# =====================================================
 # DISPLAY RESULTS
-# =====================================================# =====================================================
-# DISPLAY RESULTS
 # =====================================================
+
 
 if "estimate" in st.session_state:
 
+
     estimate = st.session_state["estimate"]
-    project = estimate["project"]
+
+    project = estimate.get(
+        "project",
+        {}
+    )
+
 
     st.divider()
 
-    st.success("✅ Estimate Ready")
+
+    st.success(
+        "✅ Estimate Ready"
+    )
+
+
+
+    # =====================================================
+    # DEBUG (REMOVE AFTER TESTING)
+    # =====================================================
+
+    st.write("DEBUG ESTIMATE KEYS")
+
+    st.write(
+        list(estimate.keys())
+    )
+
+
 
     # =====================================================
     # COST SUMMARY
@@ -304,87 +391,219 @@ if "estimate" in st.session_state:
 
     st.header("💰 Cost Summary")
 
-    c1, c2, c3, c4 = st.columns(4)
+
+    subtotal = estimate.get(
+        "subtotal",
+        estimate.get(
+            "material_cost",
+            0
+        )
+    )
+
+
+    vat = estimate.get(
+        "vat",
+        subtotal * 0.16
+    )
+
+
+    grand_total = estimate.get(
+        "grand_total",
+        estimate.get(
+            "total_cost",
+            subtotal + vat
+        )
+    )
+
+
+
+    c1,c2,c3,c4 = st.columns(4)
+
+
 
     c1.metric(
         "Subtotal",
-        f"KES {estimate['subtotal']:,.2f}"
+        f"KES {subtotal:,.2f}"
     )
+
 
     c2.metric(
         "VAT (16%)",
-        f"KES {estimate['vat']:,.2f}"
+        f"KES {vat:,.2f}"
     )
+
 
     c3.metric(
         "Grand Total",
-        f"KES {estimate['grand_total']:,.2f}"
+        f"KES {grand_total:,.2f}"
     )
 
-    area = project["Length"] * project["Width"]
+
+    area = (
+
+        project.get(
+            "length",
+            project.get(
+                "Length",
+                0
+            )
+        )
+
+        *
+
+        project.get(
+            "width",
+            project.get(
+                "Width",
+                0
+            )
+        )
+
+    )
+
+
+
+    if area > 0:
+
+        cost_m2 = grand_total / area
+
+    else:
+
+        cost_m2 = 0
+
+
 
     c4.metric(
         "Cost / m²",
-        f"KES {estimate['grand_total']/area:,.0f}"
+        f"KES {cost_m2:,.0f}"
     )
 
+
+
     st.divider()
+
+
 
     # =====================================================
     # PROJECT SUMMARY
     # =====================================================
 
-    st.header("📋 Project Summary")
+    st.header(
+        "📋 Project Summary"
+    )
 
-    a, b, c = st.columns(3)
+
+
+    a,b,c = st.columns(3)
+
+
 
     with a:
 
-        st.info(f"""
-**Client**
+        st.info(
+f"""
+### 👤 Client
 
-{st.session_state['client_name']}
+{st.session_state.get(
+    "client_name",
+    "Customer"
+)}
 
-**Project**
 
-{st.session_state['project_name']}
-""")
+### 📌 Project
+
+{st.session_state.get(
+    "project_name",
+    "Construction Project"
+)}
+
+"""
+        )
+
+
 
     with b:
 
-        st.info(f"""
-**County**
+        st.info(
+f"""
+### 📍 County
 
-{project['County']}
+{project.get(
+    "county",
+    project.get(
+        "County",
+        "-"
+    )
+)}
 
-**Project Type**
 
-{project['Project Type']}
+### 🏠 House Type
 
-**House**
+{project.get(
+    "house_type",
+    project.get(
+        "House Type",
+        "-"
+    )
+)}
 
-{project['House Type']}
-""")
+
+### 🏢 Project Type
+
+{project.get(
+    "project_type",
+    project.get(
+        "Project Type",
+        "-"
+    )
+)}
+
+"""
+        )
+
+
 
     with c:
 
-        st.info(f"""
-**Wall**
+        st.info(
+f"""
+### 🧱 Wall Material
 
-{project['Block Type']}
+{project.get(
+    "wall_material",
+    project.get(
+        "Block Type",
+        "-"
+    )
+)}
 
-**Roof**
 
-{project['Roof Type']}
-""")
+### 🏗 Roof Type
+
+{project.get(
+    "roof_type",
+    project.get(
+        "Roof Type",
+        "-"
+    )
+)}
+
+"""
+        )
+
+
 
     st.divider()
+
+
 
     # =====================================================
     # TABS
     # =====================================================
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+
+    tab1,tab2,tab3,tab4,tab5 = st.tabs(
+
         [
             "📋 BOQ",
             "🧱 Materials",
@@ -392,46 +611,56 @@ if "estimate" in st.session_state:
             "📈 Analysis",
             "📄 Export"
         ]
-    )# =====================================================
-# BOQ
-# =====================================================
 
-with tab1:
-
-    st.subheader("📋 Bill of Quantities")
-
-
-    boq = estimate.get(
-        "boq",
-        []
     )
 
 
-    if boq:
+
+    # =====================================================
+    # BOQ
+    # =====================================================
 
 
-        boq_df = pd.DataFrame(
-            boq
+    with tab1:
+
+
+        st.subheader(
+            "📋 Bill of Quantities"
         )
 
 
-        st.dataframe(
-
-            boq_df,
-
-            use_container_width=True,
-
-            hide_index=True
-
+        boq = estimate.get(
+            "boq",
+            []
         )
 
 
-    else:
+
+        if boq:
 
 
-        st.info(
-            "No BOQ items generated."
-        )
+            boq_df = pd.DataFrame(
+                boq
+            )
+
+
+            st.dataframe(
+
+                boq_df,
+
+                use_container_width=True,
+
+                hide_index=True
+
+            )
+
+
+        else:
+
+
+            st.info(
+                "No BOQ generated."
+            )
 
 
 
@@ -439,116 +668,253 @@ with tab1:
     # MATERIALS
     # =====================================================
 
+
     with tab2:
 
-        st.subheader("Material Schedule")
 
-        materials = estimate["materials"]
+        st.subheader(
+            "🧱 Material Schedule"
+        )
 
-        material_table = []
 
-        for key, value in materials.items():
+        materials = estimate.get(
+            "materials",
+            {}
+        )
 
-            material_table.append(
+
+        material_rows=[]
+
+
+        for key,value in materials.items():
+
+
+            material_rows.append(
+
                 {
-                    "Material": key.replace("_", " ").title(),
-                    "Quantity": value
+
+                "Material":
+
+                key.replace("_"," ").title(),
+
+
+                "Quantity":
+
+                value
+
                 }
+
             )
 
-        st.table(material_table)
+
+
+        if material_rows:
+
+
+            st.dataframe(
+
+                pd.DataFrame(material_rows),
+
+                use_container_width=True,
+
+                hide_index=True
+
+            )
+
+
+        else:
+
+            st.info(
+                "No material information available."
+            )
+
+
 
     # =====================================================
     # LABOUR
     # =====================================================
 
+
     with tab3:
 
-        st.subheader("Labour Schedule")
 
-        labour = estimate["labour"]
+        st.subheader(
+            "👷 Labour Schedule"
+        )
 
-        labour_table = []
 
-        for key, value in labour.items():
+        labour = estimate.get(
+            "labour",
+            {}
+        )
 
-            labour_table.append(
+
+        labour_rows=[]
+
+
+        for key,value in labour.items():
+
+
+            labour_rows.append(
+
                 {
-                    "Trade": key.replace("_", " ").title(),
-                    "Value": value
+
+                "Trade":
+
+                key.replace("_"," ").title(),
+
+
+                "Value":
+
+                value
+
                 }
+
             )
 
-        st.table(labour_table)
 
-    # =====================================================
+
+        if labour_rows:
+
+
+            st.dataframe(
+
+                pd.DataFrame(labour_rows),
+
+                use_container_width=True,
+
+                hide_index=True
+
+            )
+
+
+        else:
+
+            st.info(
+                "No labour information available."
+            )    # =====================================================
     # ANALYSIS
     # =====================================================
 
     with tab4:
 
-        st.subheader("Project Analysis")
+        st.subheader(
+            "📈 Project Analysis"
+        )
 
-        import matplotlib.pyplot as plt
 
         labels = [
+
             "Subtotal",
+
             "VAT"
+
         ]
+
 
         values = [
-            estimate["subtotal"],
-            estimate["vat"]
+
+            subtotal,
+
+            vat
+
         ]
 
-        fig, ax = plt.subplots(figsize=(7,4))
+
+
+        fig,ax = plt.subplots(
+            figsize=(7,4)
+        )
+
 
         bars = ax.bar(
             labels,
             values
         )
 
-        ax.set_ylabel("KES")
-        ax.set_title("Cost Breakdown")
+
+        ax.set_ylabel(
+            "KES"
+        )
+
+
+        ax.set_title(
+            "Construction Cost Breakdown"
+        )
+
 
         for bar in bars:
 
             height = bar.get_height()
 
+
             ax.text(
-                bar.get_x() + bar.get_width()/2,
+
+                bar.get_x()+bar.get_width()/2,
+
                 height,
+
                 f"{height:,.0f}",
+
                 ha="center",
+
                 va="bottom"
+
             )
+
 
         st.pyplot(fig)
 
-        st.metric(
-            "Estimated Floor Area",
-            f"{area:.1f} m²"
-        )
+
 
         st.metric(
-            "Estimated Cost per m²",
-            f"KES {estimate['grand_total']/area:,.2f}"
+
+            "Floor Area",
+
+            f"{area:.1f} m²"
+
         )
+
+
+        st.metric(
+
+            "Cost Per m²",
+
+            f"KES {cost_m2:,.0f}"
+
+        )
+
+
+
 
     # =====================================================
     # EXPORT
     # =====================================================
 
+
     with tab5:
 
-        st.subheader("Quotation")
+
+        st.subheader(
+            "📄 Professional Quotation"
+        )
+
 
         if st.button(
-            "📄 Generate Professional PDF",
+
+            "📄 Generate PDF",
+
             use_container_width=True
+
         ):
 
-            pdf_file = "BuildQuote_Quotation.pdf"
+
+            pdf_file = (
+
+                "BuildQuote_Quotation.pdf"
+
+            )
+
 
             generate_pdf(
 
@@ -556,13 +922,34 @@ with tab1:
 
                 estimate=estimate,
 
-                client_name=st.session_state["client_name"],
+                client_name=st.session_state.get(
 
-                project_name=st.session_state["project_name"]
+                    "client_name",
+
+                    "Customer"
+
+                ),
+
+                project_name=st.session_state.get(
+
+                    "project_name",
+
+                    "Construction Project"
+
+                )
 
             )
 
-            with open(pdf_file, "rb") as file:
+
+
+            with open(
+
+                pdf_file,
+
+                "rb"
+
+            ) as file:
+
 
                 st.download_button(
 
@@ -578,92 +965,132 @@ with tab1:
 
                 )
 
+
+
         st.info(
-            "Excel export and BOQ printing will be available in Version 2."
+
+            "Professional BOQ reports and quotations generated by BuildQuote AI."
+
         )
 
+
+
     st.divider()
+
+
 
     # =====================================================
     # AI SUMMARY
     # =====================================================
 
-    st.header("🤖 BuildQuote AI Insights")
+
+    st.header(
+        "🤖 BuildQuote AI Insights"
+    )
+
 
     st.success(
-        f"Estimated construction cost in {project['County']} is "
-        f"approximately KES {estimate['grand_total']:,.0f}."
+
+        f"Estimated construction cost in "
+
+        f"{project.get('county','selected county')} "
+
+        f"is approximately "
+
+        f"KES {grand_total:,.0f}"
+
     )
 
-    st.info(
-        f"Recommended wall material: {project['Block Type']}."
-    )
 
     st.info(
-        f"Selected roofing system: {project['Roof Type']}."
+
+        f"Recommended wall material: "
+
+        f"{project.get('wall_material','N/A')}"
+
     )
+
+
+    st.info(
+
+        f"Roofing system: "
+
+        f"{project.get('roof_type','N/A')}"
+
+    )
+
 
     st.success(
-        "Always allow a contingency budget of 5–10% for unexpected costs."
-    )# =====================================================
-# =====================================================
-# PROJECT HEALTH SCORE
-# =====================================================
 
-if "estimate" in st.session_state:
+        "Maintain a contingency budget of 5-10% for unexpected costs."
 
-    estimate = st.session_state["estimate"]
+    )
 
-    project = estimate["project"]
+
+
+    # =====================================================
+    # PROJECT HEALTH SCORE
+    # =====================================================
 
 
     st.divider()
 
-    st.header("🏆 Project Health Score")
+
+    st.header(
+        "🏆 Project Health Score"
+    )
 
 
     score = 100
 
+
     warnings = []
 
 
-    if estimate.get("grand_total",0) > 5000000:
+
+    if grand_total > 5000000:
+
 
         score -= 10
 
         warnings.append(
-            "High project budget."
+            "Large project budget detected."
         )
 
 
-    if project.get("Roof Type") == "Concrete Roof":
+
+    if project.get(
+        "roof_type"
+    ) == "Concrete Roof":
+
 
         score -= 5
 
         warnings.append(
-            "Concrete roofing increases structural load."
+
+            "Concrete roofing increases structural requirements."
+
         )
 
 
-    if project.get("Block Type") == "Coral Blocks":
 
-        score -= 5
-
-        warnings.append(
-            "Coral blocks require proper moisture protection."
-        )
-
-
-    if project.get("County") in [
+    if project.get(
+        "county"
+    ) in [
 
         "Mombasa",
+
         "Kilifi",
+
         "Kwale"
 
     ]:
 
+
         warnings.append(
-            "Coastal environment detected."
+
+            "Coastal environment detected. Consider corrosion protection."
+
         )
 
 
@@ -675,7 +1102,7 @@ if "estimate" in st.session_state:
 
     st.metric(
 
-        "Overall Project Score",
+        "Project Score",
 
         f"{score}/100"
 
@@ -683,58 +1110,56 @@ if "estimate" in st.session_state:
 
 
 
-    if len(warnings)==0:
+    if warnings:
 
-        st.success(
-            "Excellent project configuration."
-        )
+
+        for warning in warnings:
+
+            st.warning(warning)
+
 
     else:
 
-        for item in warnings:
 
-            st.warning(item)
+        st.success(
+
+            "Excellent project configuration."
+
+        )
 
 
 
     # =====================================================
-    # PROJECT TIMELINE
+    # TIMELINE
     # =====================================================
 
 
     st.divider()
+
 
     st.header(
         "📅 Estimated Timeline"
     )
 
 
-    area = (
-
-        project.get("Length",0)
-
-        *
-
-        project.get("Width",0)
-
-    )
-
-
     if area < 80:
 
-        duration="30 - 45 Days"
+        duration = "30 - 45 Days"
 
-    elif area <150:
 
-        duration="45 - 75 Days"
+    elif area < 150:
 
-    elif area <250:
+        duration = "45 - 75 Days"
 
-        duration="3 - 5 Months"
+
+    elif area < 250:
+
+        duration = "3 - 5 Months"
+
 
     else:
 
-        duration="6+ Months"
+        duration = "6+ Months"
 
 
 
@@ -742,78 +1167,21 @@ if "estimate" in st.session_state:
 
 
     t1.metric(
+
         "Estimated Duration",
+
         duration
+
     )
 
 
     t2.metric(
-        "Floor Area",
+
+        "Building Area",
+
         f"{area:.1f} m²"
+
     )
-
-
-
-    # =====================================================
-    # MATERIAL DISTRIBUTION
-    # =====================================================
-
-
-    st.divider()
-
-    st.header(
-        "📊 Material Distribution"
-    )
-
-
-    materials = estimate.get(
-        "materials",
-        {}
-    )
-
-
-    labels=[]
-
-    values=[]
-
-
-    for k,v in materials.items():
-
-        if isinstance(v,(int,float)):
-
-            labels.append(
-                k.replace("_"," ").title()
-            )
-
-            values.append(v)
-
-
-
-    if values:
-
-
-        fig,ax = plt.subplots(
-            figsize=(7,5)
-        )
-
-
-        ax.pie(
-
-            values,
-
-            labels=labels,
-
-            autopct="%1.1f%%"
-
-        )
-
-
-        ax.set_title(
-            "Material Distribution"
-        )
-
-
-        st.pyplot(fig)
 
 
 
@@ -824,26 +1192,28 @@ if "estimate" in st.session_state:
 
     st.divider()
 
+
     st.header(
         "💡 Smart Construction Tips"
     )
 
 
-    tips=[
+    tips = [
 
-        "Purchase materials in phases to reduce storage losses.",
+        "Purchase materials in phases to reduce losses.",
 
-        "Compare supplier quotations before procurement.",
+        "Compare several supplier quotations.",
 
-        "Inspect materials upon delivery.",
+        "Inspect materials before accepting delivery.",
 
-        "Allow a contingency budget of 5–10%.",
+        "Keep 5-10% contingency budget.",
 
-        "Hire qualified artisans for structural work.",
+        "Schedule labour according to milestones.",
 
-        "Follow Kenyan Building Code requirements."
+        "Follow Kenyan building regulations."
 
     ]
+
 
 
     for tip in tips:
@@ -852,72 +1222,23 @@ if "estimate" in st.session_state:
 
 
 
-    # =====================================================
-    # NEXT STEPS
-    # =====================================================
+# =====================================================
+# FOOTER
+# =====================================================
 
 
-    st.divider()
-
-    st.header(
-        "🚀 Next Steps"
-    )
-
-
-    step1,step2,step3 = st.columns(3)
-
-
-    with step1:
-
-        st.info(
-"""
-### 1
-
-Review BOQ
-
-Verify quantities before procurement.
-"""
-        )
-
-
-    with step2:
-
-        st.info(
-"""
-### 2
-
-Download PDF
-
-Generate professional quotation.
-"""
-        )
-
-
-    with step3:
-
-        st.info(
-"""
-### 3
-
-Start Construction
-
-Begin procurement and scheduling.
-"""
-        )
-
-
-
-    st.divider()
-
-
-    st.success(
-        "✔ Estimate Generated Successfully using BuildQuote AI Professional Estimation Engine"
-    )
-
+st.divider()
 
 
 st.caption(
 
-"© 2026 BuildQuote AI • Developed by Flavian Otieno • Version 1.1"
+    "© 2026 BuildQuote AI | Professional Construction Estimation Platform"
+
+)
+
+
+st.caption(
+
+    "Developed by Flavian Otieno | Version 1.1"
 
 )
