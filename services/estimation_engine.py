@@ -98,62 +98,99 @@ class EstimationEngine:
 
         }
 
+       # ==========================================================
+    # WALLING
     # ==========================================================
-# WALLING
-# ==========================================================
 
-def walling(self):
+    def walling(self):
 
-    opening = OpeningsEstimator(
+        opening = OpeningsEstimator(
 
-        main_doors=self.house.main_doors(),
+            main_doors=self.house.main_doors(),
 
-        internal_doors=self.house.internal_doors(),
+            internal_doors=self.house.internal_doors(),
 
-        bathroom_doors=self.house.bathroom_doors(),
+            bathroom_doors=self.house.bathroom_doors(),
 
-        windows=self.house.windows(),
+            windows=self.house.windows(),
 
-        toilet_windows=self.house.toilet_windows()
+            toilet_windows=self.house.toilet_windows()
 
-    )
+        )
 
-    total_doors = (
+        total_doors = (
 
-        self.house.main_doors()
+            self.house.main_doors()
 
-        + self.house.internal_doors()
+            + self.house.internal_doors()
 
-        + self.house.bathroom_doors()
+            + self.house.bathroom_doors()
 
-    )
+        )
 
-    total_windows = (
+        total_windows = (
 
-        self.house.windows()
+            self.house.windows()
 
-        + self.house.toilet_windows()
+            + self.house.toilet_windows()
 
-    )
+        )
 
-    return estimate_walling(
+        return estimate_walling(
 
-        county=self.county,
+            county=self.county,
 
-        length=self.length,
+            length=self.length,
 
-        width=self.width,
+            width=self.width,
 
-        wall_height=self.height,
+            wall_height=self.height,
 
-        doors=total_doors,
+            doors=total_doors,
 
-        windows=total_windows,
+            windows=total_windows,
 
-        block_type=self.material.name()
+            block_type=self.material.name()
 
-    )
+        )    # ==========================================================
+    # MORTAR
     # ==========================================================
+
+    def mortar(self):
+
+        wall = self.walling()
+
+        quantity = wall.get("quantities", {}).get(
+            "blocks",
+            wall.get("blocks", 0)
+        )
+
+        mortar = MortarEstimator(
+            wall_material_quantity=quantity
+        )
+
+        return mortar.summary()
+
+
+    # ==========================================================
+    # CONCRETE
+    # ==========================================================
+
+    def concrete(self):
+
+        foundation = self.foundation()
+
+        volume = foundation.get(
+            "quantities",
+            {}
+        ).get(
+            "concrete",
+            0
+        )
+
+        concrete = ConcreteCalculator(volume)
+
+        return concrete.summary()     # ==========================================================
     # MASTER BOQ
     # ==========================================================
 
