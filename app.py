@@ -30,7 +30,7 @@ st.set_page_config(
 
     layout="wide",
 
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 
 )
 
@@ -638,41 +638,42 @@ st.subheader(
     "🚀 Quick Actions"
 )
 
-
-q1,q2,q3,q4 = st.columns(4)
-
+q1, q2, q3, q4 = st.columns(4)
 
 with q1:
 
-    st.button(
+    if st.button(
         "🏗 New Estimate",
         use_container_width=True
-    )
+    ):
+        st.switch_page("pages/1_New_Estimate.py")
 
 
 with q2:
 
-    st.button(
+    if st.button(
         "📊 Dashboard",
         use_container_width=True
-    )
+    ):
+        st.switch_page("pages/2_Dashboard.py")
 
 
 with q3:
 
-    st.button(
+    if st.button(
         "📄 Reports",
         use_container_width=True
-    )
+    ):
+        st.switch_page("pages/3_BOQ_Reports.py")
 
 
 with q4:
 
-    st.button(
+    if st.button(
         "⚙ Settings",
         use_container_width=True
-    )
-
+    ):
+        st.switch_page("pages/4_Settings.py")
 
 
 st.divider()# =====================================================

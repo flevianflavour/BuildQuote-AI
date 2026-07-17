@@ -23,10 +23,9 @@ from estimators.foundation_estimator import estimate_foundation
 from estimators.openings import OpeningsEstimator
 from estimators.mortar import MortarEstimator
 from estimators.concrete import ConcreteCalculator
-
 from services.house_service import HouseService
 from services.material_service import MaterialService
-
+from estimators.walling_estimator import estimate_walling
 
 class EstimationEngine:
 
@@ -100,183 +99,60 @@ class EstimationEngine:
         }
 
     # ==========================================================
-    # WALLING
-    # ==========================================================
+# WALLING
+# ==========================================================
 
-    def walling(self):
+def walling(self):
 
-        opening = OpeningsEstimator(
+    opening = OpeningsEstimator(
 
-            main_doors=self.house.main_doors(),
+        main_doors=self.house.main_doors(),
 
-            internal_doors=self.house.internal_doors(),
+        internal_doors=self.house.internal_doors(),
 
-            bathroom_doors=self.house.bathroom_doors(),
+        bathroom_doors=self.house.bathroom_doors(),
 
-            windows=self.house.windows(),
+        windows=self.house.windows(),
 
-            toilet_windows=self.house.toilet_windows()
+        toilet_windows=self.house.toilet_windows()
 
-        )
+    )
 
-        wall_area = (
+    total_doors = (
 
-            2 *
+        self.house.main_doors()
 
-            (self.length + self.width)
+        + self.house.internal_doors()
 
-            *
+        + self.house.bathroom_doors()
 
-            self.height
+    )
 
-        )
+    total_windows = (
 
-        opening_area = opening.total_area()
+        self.house.windows()
 
-        net_wall_area = max(
+        + self.house.toilet_windows()
 
-            wall_area - opening_area,
+    )
 
-            0
+    return estimate_walling(
 
-        )
+        county=self.county,
 
-        coverage = self.material.coverage()
+        length=self.length,
 
-        blocks = round(
+        width=self.width,
 
-            net_wall_area * coverage
+        wall_height=self.height,
 
-        )
+        doors=total_doors,
 
-        materials = {
+        windows=total_windows,
 
-            "Wall Material": self.material.name(),
+        block_type=self.material.name()
 
-            "Blocks": blocks,
-
-        }
-
-        labour = {
-
-            "Mason Days": round(
-
-                blocks / 100,
-
-                1
-
-            )
-
-        }
-
-        boq = [
-
-            {
-
-                "description": self.material.name(),
-
-                "quantity": blocks,
-
-                "unit": "Pieces",
-
-                "amount": 0,
-
-            }
-
-        ]
-
-        return {
-
-            "section": "Walling",
-
-            "wall_area": round(wall_area, 2),
-
-            "opening_area": round(opening_area, 2),
-
-            "net_wall_area": round(net_wall_area, 2),
-
-            "required_quantity": blocks,
-
-            "materials": materials,
-
-            "labour": labour,
-
-            "boq": boq,
-
-            "subtotal": 0,
-
-        }    # ==========================================================
-    # MORTAR
-    # ==========================================================
-
-    def mortar(self):
-
-        walling = self.walling()
-
-        mortar = MortarEstimator(
-
-            walling["required_quantity"],
-
-            self.material.mortar_ratio()
-
-        )
-
-        result = mortar.summary()
-
-        result.setdefault("materials", {})
-
-        result.setdefault("labour", {})
-
-        result.setdefault("boq", [])
-
-        result.setdefault("subtotal", 0)
-
-        return result
-
-    # ==========================================================
-    # CONCRETE
-    # ==========================================================
-
-    def concrete(self):
-
-        foundation = self.foundation()
-
-        volume = (
-
-            foundation.get(
-
-                "quantities",
-
-                {}
-
-            ).get(
-
-                "concrete",
-
-                0
-
-            )
-
-        )
-
-        calculator = ConcreteCalculator(
-
-            volume
-
-        )
-
-        result = calculator.summary()
-
-        result.setdefault("materials", {})
-
-        result.setdefault("labour", {})
-
-        result.setdefault("boq", [])
-
-        result.setdefault("subtotal", 0)
-
-        return result
-
+    )
     # ==========================================================
     # MASTER BOQ
     # ==========================================================
@@ -284,13 +160,9 @@ class EstimationEngine:
     def generate_boq(self):
 
         foundation = self.foundation()
-
         openings = self.openings()
-
         walling = self.walling()
-
         mortar = self.mortar()
-
         concrete = self.concrete()
 
         sections = {
@@ -308,72 +180,57 @@ class EstimationEngine:
         }
 
         boq = []
-
         materials = {}
-
         labour = {}
-
         subtotal = 0
+
+        # --------------------------------------------------
+        # COLLECT DATA
+        # --------------------------------------------------
 
         for section_name, section in sections.items():
 
             if not isinstance(section, dict):
-
                 continue
 
             section_boq = section.get("boq", [])
 
             if isinstance(section_boq, list):
-
                 boq.extend(section_boq)
 
             materials[section_name] = section.get(
-
                 "materials",
-
                 {}
-
             )
 
             labour[section_name] = section.get(
-
                 "labour",
-
                 {}
-
             )
 
             if "subtotal" in section:
 
                 subtotal += float(
-
                     section.get(
-
                         "subtotal",
-
                         0
-
                     )
-
                 )
 
             elif "total" in section:
 
                 subtotal += float(
-
                     section.get(
-
                         "total",
-
                         0
-
                     )
+                )
 
-                )        # --------------------------------------------------
+        # --------------------------------------------------
         # VAT
         # --------------------------------------------------
 
-                vat = round(
+        vat = round(
             subtotal * 0.16,
             2
         )
@@ -401,8 +258,6 @@ class EstimationEngine:
             perimeter * self.height,
             2
         )
-
-        foundation = self.foundation()
 
         foundation_area = round(
             self.length * self.width,
