@@ -152,45 +152,72 @@ class EstimationEngine:
 
             block_type=self.material.name()
 
-        )    # ==========================================================
-    # MORTAR
-    # ==========================================================
+        ) # ==========================================================
+# MORTAR
+# ==========================================================
 
-    def mortar(self):
+def mortar(self):
 
-        wall = self.walling()
+    wall = self.walling()
 
-        quantity = wall.get("quantities", {}).get(
-            "blocks",
-            wall.get("blocks", 0)
-        )
+    quantity = wall.get(
+        "materials",
+        {}
+    ).get(
+        "blocks",
+        0
+    )
 
-        mortar = MortarEstimator(
-            wall_material_quantity=quantity
-        )
+    mortar = MortarEstimator(
+        wall_material_quantity=quantity
+    )
 
-        return mortar.summary()
+    return mortar.summary()
 
+# ==========================================================
+# CONCRETE
+# ==========================================================
 
-    # ==========================================================
-    # CONCRETE
-    # ==========================================================
+def concrete(self):
 
-    def concrete(self):
+    foundation = self.foundation()
 
-        foundation = self.foundation()
+    volume = foundation.get(
+        "quantities",
+        {}
+    ).get(
+        "concrete",
+        0
+    )
 
-        volume = foundation.get(
-            "quantities",
+    concrete = ConcreteCalculator(volume)
+
+    result = concrete.summary()
+
+    return {
+
+        "section": "Concrete",
+
+        "materials": result.get(
+            "materials",
             {}
-        ).get(
-            "concrete",
-            0
-        )
+        ),
 
-        concrete = ConcreteCalculator(volume)
+        "concrete_details": result,
 
-        return concrete.summary()     # ==========================================================
+        "labour": {},
+
+        "boq": [],
+
+        "subtotal": 0,
+
+        "vat": 0,
+
+        "total": 0,
+
+        "grand_total": 0,
+
+    }    # ==========================================================
     # MASTER BOQ
     # ==========================================================
 
