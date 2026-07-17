@@ -17,15 +17,26 @@ Calculates:
 • BOQ
 """
 
+# ==================================================
+# IMPORTS
+# ==================================================
 
-from costing.county_prices import pricing
+try:
+
+    from costing.county_prices import pricing
+
+except ImportError:
+
+    pricing = None
+
+
 import pandas as pd
 
 
 
-# ========================================
+# ==================================================
 # DEFAULT RATES
-# ========================================
+# ==================================================
 
 DEFAULT_RATES = {
 
@@ -51,9 +62,9 @@ DEFAULT_RATES = {
 
 
 
-# ========================================
+# ==================================================
 # ROOF FACTORS
-# ========================================
+# ==================================================
 
 ROOF_FACTORS = {
 
@@ -93,31 +104,49 @@ ROOF_FACTORS = {
 
     }
 
-
 }
 
 
 
-# ========================================
+# ==================================================
 # RATE HANDLER
-# ========================================
+# ==================================================
 
 def get_rate(county_rates, key, default):
 
-    value = county_rates.get(key)
 
-    if value is None or pd.isna(value):
+    if not county_rates:
 
         return default
+
+
+    value = county_rates.get(key)
+
+
+    if value is None:
+
+        return default
+
+
+    try:
+
+        if pd.isna(value):
+
+            return default
+
+    except Exception:
+
+        pass
+
 
     return float(value)
 
 
 
 
-# ========================================
+# ==================================================
 # ROOF ESTIMATOR
-# ========================================
+# ==================================================
 
 def estimate_roof(
 
@@ -142,13 +171,25 @@ def estimate_roof(
 
 
 
-    # Roof area including overhang
+    # ==================================================
+    # ROOF CALCULATIONS
+    # ==================================================
 
-    roof_area = length * width * 1.15
+    roof_area = (
+
+        length
+
+        *
+
+        width
+
+        *
+
+        1.15
+
+    )
 
 
-
-    # Timber
 
     timber = round(
 
@@ -176,9 +217,6 @@ def estimate_roof(
 
 
 
-
-    # Roofing material
-
     if roof_type == "Concrete Roof":
 
         iron_sheets = 0
@@ -190,7 +228,6 @@ def estimate_roof(
             roof_area / roof_config["coverage"]
 
         )
-
 
 
 
@@ -232,9 +269,6 @@ def estimate_roof(
 
 
 
-
-    # Concrete roof volume
-
     if roof_type == "Concrete Roof":
 
         concrete_volume = round(
@@ -252,11 +286,17 @@ def estimate_roof(
 
 
 
-    # ====================================
-    # COUNTY PRICES
-    # ====================================
+    # ==================================================
+    # COUNTY RATES
+    # ==================================================
 
-    county_rates = pricing.get_rates(county)
+    if pricing:
+
+        county_rates = pricing.get_rates(county)
+
+    else:
+
+        county_rates = {}
 
 
 
@@ -270,7 +310,6 @@ def estimate_roof(
         DEFAULT_RATES["Timber"]
 
     )
-
 
 
 
@@ -327,7 +366,6 @@ def estimate_roof(
 
 
 
-
     ridge_rate = get_rate(
 
         county_rates,
@@ -377,12 +415,19 @@ def estimate_roof(
 
 
 
-    # ====================================
-    # COST CALCULATIONS
-    # ====================================
+    # ==================================================
+    # COSTING
+    # ==================================================
 
+    timber_cost = (
 
-    timber_cost = timber * timber_rate
+        timber
+
+        *
+
+        timber_rate
+
+    )
 
 
 
@@ -390,7 +435,11 @@ def estimate_roof(
 
         roof_material_cost = (
 
-            concrete_volume * roof_rate
+            concrete_volume
+
+            *
+
+            roof_rate
 
         )
 
@@ -398,7 +447,11 @@ def estimate_roof(
 
         roof_material_cost = (
 
-            iron_sheets * roof_rate
+            iron_sheets
+
+            *
+
+            roof_rate
 
         )
 
@@ -412,23 +465,49 @@ def estimate_roof(
 
 
 
+    carpenter_cost = carpenter_days * carpenter_rate
+
+
+
+    fundi_cost = fundi_days * fundi_rate
+
+
+
     labour_cost = (
 
-        carpenter_days * carpenter_rate
+        carpenter_cost
 
         +
 
-        fundi_days * fundi_rate
+        fundi_cost
 
     )
 
 
 
+    material_cost = (
 
-    # ====================================
+        timber_cost
+
+        +
+
+        roof_material_cost
+
+        +
+
+        ridge_cost
+
+        +
+
+        nail_cost
+
+    )
+
+
+
+    # ==================================================
     # BOQ
-    # ====================================
-
+    # ==================================================
 
     boq = []
 
@@ -439,18 +518,15 @@ def estimate_roof(
 
         boq.append({
 
-            "description": "Concrete Roof",
+            "description":"Concrete Roof",
 
-            "quantity": concrete_volume,
+            "quantity":concrete_volume,
 
-            "unit": "m³",
+            "unit":"m³",
 
-            "rate": roof_rate,
+            "rate":roof_rate,
 
-            "amount": round(
-                roof_material_cost,
-                2
-            )
+            "amount":round(roof_material_cost,2)
 
         })
 
@@ -460,21 +536,17 @@ def estimate_roof(
 
         boq.append({
 
-            "description": f"{roof_type} Sheets",
+            "description":f"{roof_type} Sheets",
 
-            "quantity": iron_sheets,
+            "quantity":iron_sheets,
 
-            "unit": "Sheets",
+            "unit":"Sheets",
 
-            "rate": roof_rate,
+            "rate":roof_rate,
 
-            "amount": round(
-                roof_material_cost,
-                2
-            )
+            "amount":round(roof_material_cost,2)
 
         })
-
 
 
 
@@ -483,72 +555,75 @@ def estimate_roof(
 
         {
 
-            "description": "Roof Timber",
+            "description":"Roof Timber",
 
-            "quantity": timber,
+            "quantity":timber,
 
-            "unit": "m³",
+            "unit":"m³",
 
-            "rate": timber_rate,
+            "rate":timber_rate,
 
-            "amount": round(
-                timber_cost,
-                2
-            )
+            "amount":round(timber_cost,2)
 
         },
 
 
         {
 
-            "description": "Ridge Caps",
+            "description":"Ridge Caps",
 
-            "quantity": ridge_caps,
+            "quantity":ridge_caps,
 
-            "unit": "Pieces",
+            "unit":"Pieces",
 
-            "rate": ridge_rate,
+            "rate":ridge_rate,
 
-            "amount": round(
-                ridge_cost,
-                2
-            )
+            "amount":round(ridge_cost,2)
 
         },
 
 
         {
 
-            "description": "Roof Nails",
+            "description":"Roof Nails",
 
-            "quantity": nails,
+            "quantity":nails,
 
-            "unit": "Kg",
+            "unit":"Kg",
 
-            "rate": nail_rate,
+            "rate":nail_rate,
 
-            "amount": round(
-                nail_cost,
-                2
-            )
+            "amount":round(nail_cost,2)
 
         },
 
 
         {
 
-            "description": "Roof Labour",
+            "description":"Carpenter Labour",
 
-            "quantity": carpenter_days + fundi_days,
+            "quantity":carpenter_days,
 
-            "unit": "Days",
+            "unit":"Days",
 
-            "rate": 0,
+            "rate":carpenter_rate,
 
-            "amount": round(
-                labour_cost,
-                2
-            )
+            "amount":round(carpenter_cost,2)
+
+        },
+
+
+        {
+
+            "description":"Roof Fundi Labour",
+
+            "quantity":fundi_days,
+
+            "unit":"Days",
+
+            "rate":fundi_rate,
+
+            "amount":round(fundi_cost,2)
 
         }
 
@@ -575,165 +650,137 @@ def estimate_roof(
 
 
 
-    material_cost = (
-
-        timber_cost
-
-        +
-
-        roof_material_cost
-
-        +
-
-        ridge_cost
-
-        +
-
-        nail_cost
-
-    )
-
-
-
-
-    # ====================================
+    # ==================================================
     # RETURN
-    # ====================================
-
+    # ==================================================
 
     return {
 
 
-        "section": "Roof",
+        "section":"Roof",
 
 
-        "roof_type": roof_type,
+        "dimensions":{
 
+            "length":length,
 
-        "roof_area": round(
-
-            roof_area,
-
-            2
-
-        ),
-
-
-        "materials": {
-
-
-            "timber_m3": timber,
-
-            "rafters": rafters,
-
-            "purlins": purlins,
-
-            "iron_sheets": iron_sheets,
-
-            "concrete_volume_m3": concrete_volume,
-
-            "ridge_caps": ridge_caps,
-
-            "roof_nails_kg": nails
+            "width":width
 
         },
 
 
-        "labour": {
+        "roof_type":roof_type,
 
 
-            "carpenter_days": carpenter_days,
+        "roof_area":round(roof_area,2),
 
-            "fundi_days": fundi_days,
 
-            "cost": round(
 
-                labour_cost,
+        "materials":{
 
-                2
+            "timber_m3":timber,
 
-            )
+            "rafters":rafters,
+
+            "purlins":purlins,
+
+            "iron_sheets":iron_sheets,
+
+            "concrete_volume_m3":concrete_volume,
+
+            "ridge_caps":ridge_caps,
+
+            "roof_nails_kg":nails,
+
+            "cost":round(material_cost,2)
 
         },
 
 
 
-        "cost_summary": {
+        "labour":{
 
+            "carpenter_days":carpenter_days,
 
-            "material_cost": round(
+            "fundi_days":fundi_days,
 
-                material_cost,
-
-                2
-
-            ),
-
-
-            "labour_cost": round(
-
-                labour_cost,
-
-                2
-
-            ),
-
-
-            "total_cost": round(
-
-                total,
-
-                2
-
-            )
+            "cost":round(labour_cost,2)
 
         },
 
 
-
-        "boq": boq,
-
-
-        "subtotal": round(
-
-            subtotal,
-
-            2
-
-        ),
+        "boq":boq,
 
 
-        "vat": round(
-
-            vat,
-
-            2
-
-        ),
+        "material_total":round(material_cost,2),
 
 
-        "total": round(
+        "labour_total":round(labour_cost,2),
 
-            total,
 
-            2
+        "subtotal":round(subtotal,2),
 
-        )
+
+        "vat":round(vat,2),
+
+
+        "total":round(total,2),
+
+
+        "grand_total":round(total,2)
 
     }
 
 
 
 
-# ========================================
+
+# ==================================================
+# ENGINE CLASS
+# ==================================================
+
+class RoofEstimator:
+
+
+    def estimate(
+
+        self,
+
+        county,
+
+        length,
+
+        width,
+
+        roof_type="Mabati"
+
+    ):
+
+
+        return estimate_roof(
+
+            county=county,
+
+            length=length,
+
+            width=width,
+
+            roof_type=roof_type
+
+        )
+
+
+
+
+
+# ==================================================
 # TEST
-# ========================================
+# ==================================================
 
 if __name__ == "__main__":
 
 
     from pprint import pprint
-
 
 
     pprint(

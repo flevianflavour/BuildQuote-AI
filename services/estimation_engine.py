@@ -1,6 +1,26 @@
-from estimators.foundation_estimator import FoundationEstimator
+"""
+BuildQuote AI
+
+Estimation Engine v4
+
+Controls
+
+- Foundation
+- Openings
+- Walling
+- Mortar
+- Concrete
+
+Returns data ready for:
+
+✔ Dashboard
+✔ BOQ
+✔ PDF
+✔ Excel
+"""
+
+from estimators.foundation_estimator import estimate_foundation
 from estimators.openings import OpeningsEstimator
-from estimators.walling_estimator import WallingEstimator
 from estimators.mortar import MortarEstimator
 from estimators.concrete import ConcreteCalculator
 
@@ -10,42 +30,49 @@ from services.material_service import MaterialService
 
 class EstimationEngine:
 
+    # ==========================================================
+    # INITIALIZE
+    # ==========================================================
+
     def __init__(
         self,
+        county,
         length,
         width,
         height,
         house_type,
-        wall_material
+        wall_material,
+        bedrooms=3,
     ):
 
+        self.county = county
         self.length = length
         self.width = width
         self.height = height
+        self.bedrooms = bedrooms
 
         self.house = HouseService(house_type)
         self.material = MaterialService(wall_material)
 
-    # -------------------------------------------------
+    # ==========================================================
     # FOUNDATION
-    # -------------------------------------------------
+    # ==========================================================
 
     def foundation(self):
 
-        foundation = FoundationEstimator(
-            self.length,
-            self.width
+        return estimate_foundation(
+            county=self.county,
+            length=self.length,
+            width=self.width,
         )
 
-        return foundation.summary()
-
-    # -------------------------------------------------
+    # ==========================================================
     # OPENINGS
-    # -------------------------------------------------
+    # ==========================================================
 
     def openings(self):
 
-        return OpeningsEstimator(
+        opening = OpeningsEstimator(
 
             main_doors=self.house.main_doors(),
 
@@ -59,122 +86,393 @@ class EstimationEngine:
 
         )
 
-    # -------------------------------------------------
+        return {
+
+            "section": "Openings",
+
+            "summary": opening.summary(),
+
+            "total_opening_area": round(
+                opening.total_area(),
+                2,
+            )
+
+        }
+
+    # ==========================================================
     # WALLING
-    # -------------------------------------------------
+    # ==========================================================
 
     def walling(self):
 
-        openings = self.openings()
+        opening = OpeningsEstimator(
 
-        wall = WallingEstimator(
+            main_doors=self.house.main_doors(),
 
-            length=self.length,
+            internal_doors=self.house.internal_doors(),
 
-            width=self.width,
+            bathroom_doors=self.house.bathroom_doors(),
 
-            height=self.height,
+            windows=self.house.windows(),
 
-            openings_area=openings.total_area(),
-
-            coverage=self.material.coverage(),
-
-            material_name=self.material.name()
+            toilet_windows=self.house.toilet_windows()
 
         )
 
-        return wall.summary()
+        wall_area = (
 
-    # -------------------------------------------------
+            2 *
+
+            (self.length + self.width)
+
+            *
+
+            self.height
+
+        )
+
+        opening_area = opening.total_area()
+
+        net_wall_area = max(
+
+            wall_area - opening_area,
+
+            0
+
+        )
+
+        coverage = self.material.coverage()
+
+        blocks = round(
+
+            net_wall_area * coverage
+
+        )
+
+        materials = {
+
+            "Wall Material": self.material.name(),
+
+            "Blocks": blocks,
+
+        }
+
+        labour = {
+
+            "Mason Days": round(
+
+                blocks / 100,
+
+                1
+
+            )
+
+        }
+
+        boq = [
+
+            {
+
+                "description": self.material.name(),
+
+                "quantity": blocks,
+
+                "unit": "Pieces",
+
+                "amount": 0,
+
+            }
+
+        ]
+
+        return {
+
+            "section": "Walling",
+
+            "wall_area": round(wall_area, 2),
+
+            "opening_area": round(opening_area, 2),
+
+            "net_wall_area": round(net_wall_area, 2),
+
+            "required_quantity": blocks,
+
+            "materials": materials,
+
+            "labour": labour,
+
+            "boq": boq,
+
+            "subtotal": 0,
+
+        }    # ==========================================================
     # MORTAR
-    # -------------------------------------------------
+    # ==========================================================
 
     def mortar(self):
 
-        wall = self.walling()
+        walling = self.walling()
 
         mortar = MortarEstimator(
 
-            wall["Required Quantity"]["quantity"],
+            walling["required_quantity"],
 
             self.material.mortar_ratio()
 
         )
 
-        return mortar.summary()
+        result = mortar.summary()
 
-    # -------------------------------------------------
+        result.setdefault("materials", {})
+
+        result.setdefault("labour", {})
+
+        result.setdefault("boq", [])
+
+        result.setdefault("subtotal", 0)
+
+        return result
+
+    # ==========================================================
     # CONCRETE
-    # -------------------------------------------------
+    # ==========================================================
 
     def concrete(self):
 
-        foundation = FoundationEstimator(
+        foundation = self.foundation()
 
-            self.length,
+        volume = (
 
-            self.width
+            foundation.get(
+
+                "quantities",
+
+                {}
+
+            ).get(
+
+                "concrete",
+
+                0
+
+            )
 
         )
 
-        concrete = ConcreteCalculator(
+        calculator = ConcreteCalculator(
 
-            foundation.foundation_concrete_volume()
+            volume
 
         )
 
-        return concrete.summary()
+        result = calculator.summary()
 
-    # -------------------------------------------------
+        result.setdefault("materials", {})
+
+        result.setdefault("labour", {})
+
+        result.setdefault("boq", [])
+
+        result.setdefault("subtotal", 0)
+
+        return result
+
+    # ==========================================================
     # MASTER BOQ
-    # -------------------------------------------------
+    # ==========================================================
 
     def generate_boq(self):
 
-        perimeter = 2 * (self.length + self.width)
+        foundation = self.foundation()
+
+        openings = self.openings()
 
         walling = self.walling()
 
         mortar = self.mortar()
 
-        foundation = self.foundation()
-
         concrete = self.concrete()
 
-        blocks = walling["Required Quantity"]["quantity"]
+        sections = {
 
-        mason_days = round(blocks / 150, 2)
+            "Foundation": foundation,
+
+            "Openings": openings,
+
+            "Walling": walling,
+
+            "Mortar": mortar,
+
+            "Concrete": concrete,
+
+        }
+
+        boq = []
+
+        materials = {}
+
+        labour = {}
+
+        subtotal = 0
+
+        for section_name, section in sections.items():
+
+            if not isinstance(section, dict):
+
+                continue
+
+            section_boq = section.get("boq", [])
+
+            if isinstance(section_boq, list):
+
+                boq.extend(section_boq)
+
+            materials[section_name] = section.get(
+
+                "materials",
+
+                {}
+
+            )
+
+            labour[section_name] = section.get(
+
+                "labour",
+
+                {}
+
+            )
+
+            if "subtotal" in section:
+
+                subtotal += float(
+
+                    section.get(
+
+                        "subtotal",
+
+                        0
+
+                    )
+
+                )
+
+            elif "total" in section:
+
+                subtotal += float(
+
+                    section.get(
+
+                        "total",
+
+                        0
+
+                    )
+
+                )        # --------------------------------------------------
+        # VAT
+        # --------------------------------------------------
+
+                vat = round(
+            subtotal * 0.16,
+            2
+        )
+
+        grand_total = round(
+            subtotal + vat,
+            2
+        )
+
+        # ==========================================================
+        # BUILDING STATISTICS
+        # ==========================================================
+
+        floor_area = round(
+            self.length * self.width,
+            2
+        )
+
+        perimeter = round(
+            2 * (self.length + self.width),
+            2
+        )
+
+        wall_area = round(
+            perimeter * self.height,
+            2
+        )
+
+        foundation = self.foundation()
+
+        foundation_area = round(
+            self.length * self.width,
+            2
+        )
+
+        excavation_volume = foundation.get(
+            "quantities",
+            {}
+        ).get(
+            "excavation",
+            0
+        )
+
+        concrete_volume = foundation.get(
+            "quantities",
+            {}
+        ).get(
+            "concrete",
+            0
+        )
+
+        # ==========================================================
+        # RETURN
+        # ==========================================================
 
         return {
 
-            "perimeter": perimeter,
+            "project": {
 
-            "wall_area": walling["Net Wall Area"]["quantity"],
+                "County": self.county,
 
-            "material_name": self.material.name(),
+                "Length": self.length,
 
-            "material_unit": walling["Required Quantity"]["unit"],
+                "Width": self.width,
 
-            "coverage": self.material.coverage(),
+                "Wall Height": self.height,
 
-            "blocks": blocks,
+                "Perimeter": perimeter,
 
-            "cement_bags": mortar["Cement"]["quantity"],
+                "Floor Area": floor_area,
 
-            "sand_tons": mortar["Sand"]["quantity"],
+                "Wall Area": wall_area,
 
-            "mason_days": mason_days,
+                "Foundation Area": foundation_area,
 
-            "boq": {
+                "Excavation Volume": excavation_volume,
 
-                "Foundation": foundation,
+                "Concrete Volume": concrete_volume,
 
-                "Walling": walling,
+                "House Type": self.house.house_type,
 
-                "Mortar": mortar,
+                "Wall Material": self.material.name(),
 
-                "Concrete": concrete
+                "Bedrooms": self.bedrooms,
 
-            }
+            },
+
+            "sections": sections,
+
+            "boq": boq,
+
+            "materials": materials,
+
+            "labour": labour,
+
+            "subtotal": round(subtotal, 2),
+
+            "vat": vat,
+
+            "grand_total": grand_total,
 
         }

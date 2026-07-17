@@ -13,302 +13,643 @@ Calculates:
 • Shower Mixers
 • Floor Traps
 • Labour
+• BOQ
 """
 
-from costing.county_prices import pricing
 
+# ==================================================
+# IMPORTS
+# ==================================================
+
+try:
+
+    from costing.county_prices import pricing
+
+except ImportError:
+
+    pricing = None
+
+
+
+
+# ==================================================
+# DEFAULT RATES
+# ==================================================
 
 DEFAULT_RATES = {
 
-    "Water_Pipe": 250,
-    "Waste_Pipe": 450,
-    "Toilet": 12000,
-    "Wash_Basin": 6500,
-    "Kitchen_Sink": 8500,
-    "Shower_Mixer": 5500,
-    "Floor_Trap": 850,
-    "Plumber_Day": 2500
+
+    "Water_Pipe":250,
+
+    "Waste_Pipe":450,
+
+    "Toilet":12000,
+
+    "Wash_Basin":6500,
+
+    "Kitchen_Sink":8500,
+
+    "Shower_Mixer":5500,
+
+    "Floor_Trap":850,
+
+    "Plumber_Day":2500
 
 }
 
 
-def get_rate(county_rates, key, default):
+
+
+# ==================================================
+# RATE HANDLER
+# ==================================================
+
+def get_rate(county_rates,key,default):
+
+
+    if not county_rates:
+
+        return default
+
 
     value = county_rates.get(key)
 
+
     if value is None:
+
         return default
+
 
     try:
+
         return float(value)
+
     except:
+
         return default
 
+
+
+
+# ==================================================
+# PLUMBING ESTIMATOR
+# ==================================================
 
 def estimate_plumbing(
 
     county,
+
     bedrooms=3
 
 ):
 
-    county_rates = pricing.get_rates(county)
 
-    # ------------------------------------
-    # Estimated Quantities
-    # ------------------------------------
+    # ==================================================
+    # COUNTY RATES
+    # ==================================================
 
-    if bedrooms == 1:
+    if pricing:
 
-        water_pipe = 60
-        waste_pipe = 35
-        toilets = 1
-        basins = 1
-        showers = 1
-
-    elif bedrooms == 2:
-
-        water_pipe = 90
-        waste_pipe = 55
-        toilets = 2
-        basins = 2
-        showers = 2
-
-    elif bedrooms == 3:
-
-        water_pipe = 120
-        waste_pipe = 70
-        toilets = 3
-        basins = 3
-        showers = 3
-
-    elif bedrooms == 4:
-
-        water_pipe = 150
-        waste_pipe = 90
-        toilets = 4
-        basins = 4
-        showers = 4
+        county_rates = pricing.get_rates(county)
 
     else:
 
+        county_rates = {}
+
+
+
+
+    # ==================================================
+    # QUANTITIES BASED ON HOUSE SIZE
+    # ==================================================
+
+    if bedrooms == 1:
+
+
+        water_pipe = 60
+
+        waste_pipe = 35
+
+        toilets = 1
+
+        basins = 1
+
+        showers = 1
+
+
+
+    elif bedrooms == 2:
+
+
+        water_pipe = 90
+
+        waste_pipe = 55
+
+        toilets = 2
+
+        basins = 2
+
+        showers = 2
+
+
+
+    elif bedrooms == 3:
+
+
+        water_pipe = 120
+
+        waste_pipe = 70
+
+        toilets = 3
+
+        basins = 3
+
+        showers = 3
+
+
+
+    elif bedrooms == 4:
+
+
+        water_pipe = 150
+
+        waste_pipe = 90
+
+        toilets = 4
+
+        basins = 4
+
+        showers = 4
+
+
+
+    else:
+
+
         water_pipe = 200
+
         waste_pipe = 120
+
         toilets = 5
+
         basins = 5
+
         showers = 5
+
+
+
 
     kitchen_sink = 1
 
+
     floor_traps = toilets + showers
 
-    plumber_days = round((water_pipe + waste_pipe) / 40, 1)
 
-    # ------------------------------------
-    # County Rates
-    # ------------------------------------
+    plumber_days = round(
+
+        (water_pipe + waste_pipe) / 40,
+
+        1
+
+    )
+
+
+
+
+    # ==================================================
+    # RATES
+    # ==================================================
 
     water_pipe_rate = get_rate(
+
         county_rates,
+
         "Water_Pipe",
+
         DEFAULT_RATES["Water_Pipe"]
+
     )
+
 
     waste_pipe_rate = get_rate(
+
         county_rates,
+
         "Waste_Pipe",
+
         DEFAULT_RATES["Waste_Pipe"]
+
     )
+
 
     toilet_rate = get_rate(
+
         county_rates,
+
         "Toilet",
+
         DEFAULT_RATES["Toilet"]
+
     )
+
 
     basin_rate = get_rate(
+
         county_rates,
+
         "Wash_Basin",
+
         DEFAULT_RATES["Wash_Basin"]
+
     )
+
 
     sink_rate = get_rate(
+
         county_rates,
+
         "Kitchen_Sink",
+
         DEFAULT_RATES["Kitchen_Sink"]
+
     )
+
 
     shower_rate = get_rate(
+
         county_rates,
+
         "Shower_Mixer",
+
         DEFAULT_RATES["Shower_Mixer"]
+
     )
+
 
     trap_rate = get_rate(
+
         county_rates,
+
         "Floor_Trap",
+
         DEFAULT_RATES["Floor_Trap"]
+
     )
 
+
     plumber_rate = get_rate(
+
         county_rates,
+
         "Plumber_Day",
+
         DEFAULT_RATES["Plumber_Day"]
-    )    # ------------------------------------
-    # Costs
-    # ------------------------------------
+
+    )
+
+
+
+
+    # ==================================================
+    # COSTING
+    # ==================================================
 
     water_pipe_cost = water_pipe * water_pipe_rate
 
+
     waste_pipe_cost = waste_pipe * waste_pipe_rate
+
 
     toilet_cost = toilets * toilet_rate
 
+
     basin_cost = basins * basin_rate
+
 
     sink_cost = kitchen_sink * sink_rate
 
+
     shower_cost = showers * shower_rate
+
 
     trap_cost = floor_traps * trap_rate
 
+
     labour_cost = plumber_days * plumber_rate
 
-    # ------------------------------------
+
+
+
+    material_cost = (
+
+        water_pipe_cost
+
+        +
+
+        waste_pipe_cost
+
+        +
+
+        toilet_cost
+
+        +
+
+        basin_cost
+
+        +
+
+        sink_cost
+
+        +
+
+        shower_cost
+
+        +
+
+        trap_cost
+
+    )
+
+
+
+
+
+    # ==================================================
     # BOQ
-    # ------------------------------------
+    # ==================================================
 
     boq = [
 
-        {
-            "description": "Water Pipes",
-            "quantity": water_pipe,
-            "unit": "Metres",
-            "rate": water_pipe_rate,
-            "amount": round(water_pipe_cost, 2)
-        },
 
         {
-            "description": "Waste Pipes",
-            "quantity": waste_pipe,
-            "unit": "Metres",
-            "rate": waste_pipe_rate,
-            "amount": round(waste_pipe_cost, 2)
+
+            "description":"Water Pipes",
+
+            "quantity":water_pipe,
+
+            "unit":"Metres",
+
+            "rate":water_pipe_rate,
+
+            "amount":round(water_pipe_cost,2)
+
         },
 
-        {
-            "description": "Toilets",
-            "quantity": toilets,
-            "unit": "Pieces",
-            "rate": toilet_rate,
-            "amount": round(toilet_cost, 2)
-        },
 
         {
-            "description": "Wash Basins",
-            "quantity": basins,
-            "unit": "Pieces",
-            "rate": basin_rate,
-            "amount": round(basin_cost, 2)
+
+            "description":"Waste Pipes",
+
+            "quantity":waste_pipe,
+
+            "unit":"Metres",
+
+            "rate":waste_pipe_rate,
+
+            "amount":round(waste_pipe_cost,2)
+
         },
 
-        {
-            "description": "Kitchen Sink",
-            "quantity": kitchen_sink,
-            "unit": "Piece",
-            "rate": sink_rate,
-            "amount": round(sink_cost, 2)
-        },
 
         {
-            "description": "Shower Mixers",
-            "quantity": showers,
-            "unit": "Pieces",
-            "rate": shower_rate,
-            "amount": round(shower_cost, 2)
+
+            "description":"Toilets",
+
+            "quantity":toilets,
+
+            "unit":"Pieces",
+
+            "rate":toilet_rate,
+
+            "amount":round(toilet_cost,2)
+
         },
 
-        {
-            "description": "Floor Traps",
-            "quantity": floor_traps,
-            "unit": "Pieces",
-            "rate": trap_rate,
-            "amount": round(trap_cost, 2)
-        },
 
         {
-            "description": "Plumbing Labour",
-            "quantity": plumber_days,
-            "unit": "Days",
-            "rate": plumber_rate,
-            "amount": round(labour_cost, 2)
+
+            "description":"Wash Basins",
+
+            "quantity":basins,
+
+            "unit":"Pieces",
+
+            "rate":basin_rate,
+
+            "amount":round(basin_cost,2)
+
+        },
+
+
+        {
+
+            "description":"Kitchen Sink",
+
+            "quantity":kitchen_sink,
+
+            "unit":"Piece",
+
+            "rate":sink_rate,
+
+            "amount":round(sink_cost,2)
+
+        },
+
+
+        {
+
+            "description":"Shower Mixers",
+
+            "quantity":showers,
+
+            "unit":"Pieces",
+
+            "rate":shower_rate,
+
+            "amount":round(shower_cost,2)
+
+        },
+
+
+        {
+
+            "description":"Floor Traps",
+
+            "quantity":floor_traps,
+
+            "unit":"Pieces",
+
+            "rate":trap_rate,
+
+            "amount":round(trap_cost,2)
+
+        },
+
+
+        {
+
+            "description":"Plumbing Labour",
+
+            "quantity":plumber_days,
+
+            "unit":"Days",
+
+            "rate":plumber_rate,
+
+            "amount":round(labour_cost,2)
+
         }
 
     ]
 
-    # ------------------------------------
-    # Totals
-    # ------------------------------------
 
-    subtotal = sum(item["amount"] for item in boq)
 
-    vat = round(subtotal * 0.16, 2)
 
-    total = round(subtotal + vat, 2)
+    # ==================================================
+    # TOTALS
+    # ==================================================
 
-    # ------------------------------------
-    # Return
-    # ------------------------------------
+    subtotal = sum(
+
+        item["amount"]
+
+        for item in boq
+
+    )
+
+
+    vat = subtotal * 0.16
+
+
+    total = subtotal + vat
+
+
+
+
+    # ==================================================
+    # RETURN
+    # ==================================================
 
     return {
 
-        "section": "Plumbing",
 
-        "materials": {
+        "section":"Plumbing",
 
-            "water_pipe": water_pipe,
-            "waste_pipe": waste_pipe,
-            "toilets": toilets,
-            "wash_basins": basins,
-            "kitchen_sink": kitchen_sink,
-            "shower_mixers": showers,
-            "floor_traps": floor_traps,
 
-            "water_pipe_cost": round(water_pipe_cost, 2),
-            "waste_pipe_cost": round(waste_pipe_cost, 2),
-            "toilet_cost": round(toilet_cost, 2),
-            "basin_cost": round(basin_cost, 2),
-            "sink_cost": round(sink_cost, 2),
-            "shower_cost": round(shower_cost, 2),
-            "trap_cost": round(trap_cost, 2)
+
+        "house_size":{
+
+            "bedrooms":bedrooms
 
         },
 
-        "labour": {
 
-            "plumber_days": plumber_days,
-            "cost": round(labour_cost, 2)
+
+        "materials":{
+
+
+            "water_pipe":water_pipe,
+
+            "waste_pipe":waste_pipe,
+
+            "toilets":toilets,
+
+            "wash_basins":basins,
+
+            "kitchen_sink":kitchen_sink,
+
+            "shower_mixers":showers,
+
+            "floor_traps":floor_traps,
+
+
+            "cost":round(material_cost,2)
 
         },
 
-        "boq": boq,
 
-        "subtotal": round(subtotal, 2),
 
-        "vat": vat,
+        "labour":{
 
-        "total": total
+
+            "plumber_days":plumber_days,
+
+            "cost":round(labour_cost,2)
+
+        },
+
+
+
+        "boq":boq,
+
+
+
+        "material_total":round(material_cost,2),
+
+
+
+        "labour_total":round(labour_cost,2),
+
+
+
+        "subtotal":round(subtotal,2),
+
+
+
+        "vat":round(vat,2),
+
+
+
+        "total":round(total,2),
+
+
+
+        "grand_total":round(total,2)
 
     }
 
 
-# ------------------------------------
-# Test
-# ------------------------------------
+
+
+# ==================================================
+# ENGINE CLASS
+# ==================================================
+
+class PlumbingEstimator:
+
+
+    def estimate(
+
+        self,
+
+        county,
+
+        bedrooms=3
+
+    ):
+
+
+        return estimate_plumbing(
+
+            county=county,
+
+            bedrooms=bedrooms
+
+        )
+
+
+
+
+
+# ==================================================
+# TEST
+# ==================================================
 
 if __name__ == "__main__":
 
+
     from pprint import pprint
+
 
     pprint(
 

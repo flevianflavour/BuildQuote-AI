@@ -1,49 +1,178 @@
+"""
+BuildQuote AI
+
+AI Construction Advisor Prompt Builder
+"""
+
+
+
 def build_prompt(project, estimate):
 
-    return f"""
-You are an experienced Kenyan Quantity Surveyor and Construction Consultant.
 
-PROJECT
+    return f"""
+
+You are an experienced Kenyan Quantity Surveyor, Construction Consultant, and Building Advisor.
+
+Analyze the following construction project.
+
+==============================
+PROJECT INFORMATION
+==============================
+
+Client:
+{project.client_name}
+
+
+Project Name:
+{project.project_name}
+
 
 County:
-{project['County']}
+{project.county}
+
+
+Location:
+{project.location}
+
 
 Project Type:
-{project['Project Type']}
+{project.project_type}
 
-House:
-{project['House Type']}
 
-Roof:
-{project['Roof Type']}
+House Type:
+{project.house_type}
 
-Wall Material:
-{project['Block Type']}
+
+Bedrooms:
+{project.bedrooms}
+
+
+Floors:
+{project.floors}
+
+
+Building Dimensions:
 
 Length:
-{project['Length']} metres
+{project.length} metres
+
 
 Width:
-{project['Width']} metres
+{project.width} metres
+
 
 Wall Height:
-{project['Wall Height']} metres
+{project.height} metres
 
-Estimated Cost:
-KES {estimate['grand_total']:,.2f}
+
+
+==============================
+CONSTRUCTION DETAILS
+==============================
+
+
+Wall Material:
+{project.wall_material}
+
+
+Roof Type:
+{project.roof_type}
+
+
+
+==============================
+COST INFORMATION
+==============================
+
+
+Estimated Construction Cost:
+
+KES {estimate.get('grand_total',0):,.2f}
+
+
+
+
+Provide a professional construction advisory report covering:
+
+
+
+1. County climate analysis
+
+- Weather conditions
+- Coastal/highland considerations
+- Materials affected by climate
+
+
+
+2. Roofing recommendation
+
+- Suitable roofing option
+- Durability
+- Maintenance requirements
+
+
+
+3. Wall material recommendation
+
+- Strength
+- Cost effectiveness
+- Availability in Kenya
+
+
+
+4. Construction risks
+
+Include:
+
+- Material risks
+- Labour risks
+- Weather risks
+- Budget risks
+
+
+
+5. Cost saving strategies
+
+Suggest:
+
+- Alternative materials
+- Better construction planning
+- Waste reduction
+
+
+
+6. Estimated construction duration
 
 Provide:
 
-1. Climate advice for this county.
-2. Best roofing recommendation.
-3. Best wall material recommendation.
-4. Construction risks.
-5. Cost saving ideas.
-6. Estimated construction duration.
-7. Maintenance advice.
-8. Sustainability recommendations.
+- Approximate timeline
+- Key construction stages
 
-Use Kenyan construction standards.
 
-Limit response to around 300 words.
+
+7. Maintenance advice
+
+Cover:
+
+- Roof maintenance
+- Wall maintenance
+- Plumbing
+- Electrical systems
+
+
+
+8. Sustainability recommendations
+
+Include:
+
+- Energy efficiency
+- Water conservation
+- Environmentally friendly options
+
+
+
+Use Kenyan construction practices and realistic site experience.
+
+Keep the response professional and limit it to approximately 300 words.
+
 """

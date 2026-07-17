@@ -1,91 +1,177 @@
+"""
+BuildQuote AI
+
+Project Model
+
+Stores:
+• Client Information
+• Building Details
+• Construction Preferences
+• System Metadata
+"""
+
+
 from datetime import datetime
+import uuid
+
+
+
 
 
 class Project:
+
 
 
     def __init__(
 
         self,
 
+
         client_name,
+
 
         project_name,
 
+
         county,
+
 
         project_type,
 
-        house_type,
 
-        floors,
+        house_type=None,
 
-        length,
 
-        width,
+        floors=1,
 
-        height,
 
-        wall_material,
+        length=10,
 
-        roof_type
+
+        width=12,
+
+
+        height=3,
+
+
+        wall_material="Machine Cut Stone",
+
+
+        roof_type="Mabati",
+
+
+        bedrooms=3,
+
+
+        contractor="BuildQuote AI",
+
+
+        location=None
 
     ):
 
 
-        # =============================
-        # Project Information
-        # =============================
+
+        # ==================================
+        # CLIENT INFORMATION
+        # ==================================
+
 
         self.client_name = client_name
 
+
         self.project_name = project_name
+
+
+        self.contractor = contractor
+
+
+        self.location = location or county
+
+
+
+
+
+        # ==================================
+        # PROJECT DETAILS
+        # ==================================
+
 
         self.county = county
 
+
         self.project_type = project_type
+
 
         self.house_type = house_type
 
 
 
-        # =============================
-        # Building Details
-        # =============================
+        self.bedrooms = bedrooms
+
+
+
+
+
+        # ==================================
+        # BUILDING DIMENSIONS
+        # ==================================
+
 
         self.floors = floors
 
+
         self.length = length
 
+
         self.width = width
+
 
         self.height = height
 
 
+
+
+
+        # ==================================
+        # MATERIAL SELECTION
+        # ==================================
+
+
         self.wall_material = wall_material
+
 
         self.roof_type = roof_type
 
 
 
-        # =============================
-        # System Information
-        # =============================
+
+
+        # ==================================
+        # SYSTEM INFORMATION
+        # ==================================
+
 
         self.created_at = datetime.now()
 
 
+
         self.project_id = (
 
-            f"BQ-{self.created_at.strftime('%Y%m%d%H%M%S')}"
+            f"BQ-{self.created_at.strftime('%Y%m%d%H%M%S')}-"
+
+            f"{uuid.uuid4().hex[:4].upper()}"
 
         )
 
 
 
-    # =================================
-    # Convert Project To Dictionary
-    # =================================
+
+
+
+    # ==================================
+    # PROJECT SUMMARY
+    # ==================================
 
     def summary(self):
 
@@ -98,9 +184,11 @@ class Project:
             self.project_id,
 
 
+
             "client_name":
 
             self.client_name,
+
 
 
             "project_name":
@@ -108,9 +196,23 @@ class Project:
             self.project_name,
 
 
+
+            "contractor":
+
+            self.contractor,
+
+
+
+            "location":
+
+            self.location,
+
+
+
             "county":
 
             self.county,
+
 
 
             "project_type":
@@ -118,9 +220,17 @@ class Project:
             self.project_type,
 
 
+
             "house_type":
 
             self.house_type,
+
+
+
+            "bedrooms":
+
+            self.bedrooms,
+
 
 
             "floors":
@@ -128,9 +238,11 @@ class Project:
             self.floors,
 
 
+
             "length":
 
             self.length,
+
 
 
             "width":
@@ -138,9 +250,11 @@ class Project:
             self.width,
 
 
+
             "height":
 
             self.height,
+
 
 
             "wall_material":
@@ -148,15 +262,51 @@ class Project:
             self.wall_material,
 
 
+
             "roof_type":
 
             self.roof_type,
 
 
+
             "created_at":
 
             self.created_at.strftime(
+
                 "%d-%m-%Y %H:%M"
+
             )
 
         }
+
+
+
+
+    # ==================================
+    # DICTIONARY FORMAT
+    # For Database / Session / PDF
+    # ==================================
+
+    def to_dict(self):
+
+
+        return self.summary()
+
+
+
+
+
+    # ==================================
+    # DISPLAY NAME
+    # ==================================
+
+    def __str__(self):
+
+
+        return (
+
+            f"{self.project_name} - "
+
+            f"{self.client_name}"
+
+        )

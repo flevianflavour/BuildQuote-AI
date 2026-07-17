@@ -1,27 +1,12 @@
 """
 BuildQuote AI
-
-Quotation PDF Generator
-
-Features:
-- Company Header
-- Logo
-- Client Details
-- Project Details
-- BOQ
-- Materials Summary
-- Labour Summary
-- Cost Summary
-- VAT
-- Contingency
-- Signature Section
+Professional Quotation PDF Generator
 """
-
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.enums import TA_CENTER
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -32,20 +17,83 @@ from reportlab.platypus import (
     Image
 )
 
+from reportlab.pdfbase.pdfmetrics import stringWidth
+
 from datetime import datetime
 
 import random
 import os
 
-
 from config.settings_manager import get_company_settings
 
 
+# ==========================================================
+# STYLES
+# ==========================================================
 
-# ==================================================
-# GENERATE PDF
-# ==================================================
+styles = getSampleStyleSheet()
 
+title_style = styles["Title"]
+title_style.alignment = TA_CENTER
+
+heading = styles["Heading2"]
+
+normal = styles["BodyText"]
+
+small = styles["Italic"]
+small.fontSize = 8
+
+
+# ==========================================================
+# HELPERS
+# ==========================================================
+
+def money(value, currency):
+
+    try:
+        value = float(value)
+    except Exception:
+        value = 0
+
+    return f"{currency} {value:,.2f}"
+
+
+def add_table_style(table):
+
+    table.setStyle(
+
+        TableStyle([
+
+            ("GRID",(0,0),(-1,-1),0.5,colors.grey),
+
+            ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#1f4e78")),
+
+            ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+
+            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+
+            ("BOTTOMPADDING",(0,0),(-1,0),8),
+
+            ("TOPPADDING",(0,0),(-1,0),8),
+
+            ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+
+            ("ROWBACKGROUNDS",
+             (0,1),
+             (-1,-1),
+             [colors.white, colors.HexColor("#f5f7fa")]
+            )
+
+        ])
+
+    )
+
+    return table
+
+
+# ==========================================================
+# MAIN PDF
+# ==========================================================
 
 def generate_pdf(
 
@@ -59,98 +107,87 @@ def generate_pdf(
 
 ):
 
-
     company = get_company_settings()
-
-
-
-    doc = SimpleDocTemplate(
-
-        filename,
-
-        pagesize=A4
-
-    )
-
-
-    styles = getSampleStyleSheet()
-
-
-    elements = []
-
-
 
     currency = company.get(
         "currency",
         "KES"
     )
 
+    project = estimate.get(
+        "project",
+        {}
+    )
 
+    quotation_number = (
+        "BQA-" +
+        str(random.randint(1000,9999))
+    )
 
-    # ==================================================
-    # COMPANY HEADER
-    # ==================================================
+    doc = SimpleDocTemplate(
 
+        filename,
 
-    if company.get(
-        "show_logo",
-        True
-    ):
+        pagesize=A4,
 
+        rightMargin=25,
 
-        logo_path = company.get(
+        leftMargin=25,
 
+        topMargin=25,
+
+        bottomMargin=25
+
+    )
+
+    elements = []
+
+    # ======================================================
+    # LOGO
+    # ======================================================
+
+    if company.get("show_logo", True):
+
+        logo = company.get(
             "logo",
-
             "assets/logo.png"
-
         )
 
-
-        if os.path.exists(logo_path):
-
+        if os.path.exists(logo):
 
             elements.append(
 
                 Image(
 
-                    logo_path,
+                    logo,
 
-                    width=80,
+                    width=75,
 
-                    height=80
+                    height=75
 
                 )
 
             )
 
+            elements.append(
+                Spacer(1,10)
+            )
 
+    # ======================================================
+    # COMPANY NAME
+    # ======================================================
 
     elements.append(
 
         Paragraph(
 
-            f"""
+            f"<b>{company.get('company_name','BuildQuote AI')}</b>",
 
-            <b>
-
-            <font size=22>
-
-            {company.get('company_name','BuildQuote AI')}
-
-            </font>
-
-            </b>
-
-            """,
-
-            styles["Title"]
+            title_style
 
         )
 
     )
-
-
 
     elements.append(
 
@@ -160,348 +197,547 @@ def generate_pdf(
 
                 "tagline",
 
-                "Construction Estimation & BOQ System"
+                "Professional Construction Estimation Platform"
 
             ),
 
-            styles["Normal"]
+            normal
 
         )
 
     )
-
 
     elements.append(
         Spacer(1,15)
     )
 
-
-
-    # ==================================================
+    # ======================================================
     # COMPANY DETAILS
-    # ==================================================
+    # ======================================================
 
-
-    company_details = Table(
+    company_table = Table(
 
         [
 
-            [
-                "Contractor",
-                company.get("contractor","")
-            ],
+            ["Contractor", company.get("contractor","")],
 
-            [
-                "Phone",
-                company.get("phone","")
-            ],
+            ["Phone", company.get("phone","")],
 
-            [
-                "Email",
-                company.get("email","")
-            ],
+            ["Email", company.get("email","")],
 
-            [
-                "Location",
-                company.get("location","")
-            ],
+            ["Location", company.get("location","")],
 
-            [
-                "Registration",
-                company.get("registration","")
-            ]
+            ["Registration", company.get("registration","")]
 
         ],
 
-        colWidths=[120,300]
+        colWidths=[130,300]
 
     )
 
-
-
-    company_details.setStyle(
+    company_table.setStyle(
 
         TableStyle([
 
-            (
-                "GRID",
-                (0,0),
-                (-1,-1),
-                0.5,
-                colors.black
-            ),
+            ("GRID",(0,0),(-1,-1),0.5,colors.grey),
 
-            (
-                "BACKGROUND",
-                (0,0),
-                (0,-1),
-                colors.lightgrey
-            )
+            ("BACKGROUND",(0,0),(0,-1),colors.lightgrey),
+
+            ("FONTNAME",(0,0),(0,-1),"Helvetica-Bold")
 
         ])
 
     )
 
-
-
-    elements.append(company_details)
+    elements.append(company_table)
 
     elements.append(
         Spacer(1,20)
     )
 
-
-
-    # ==================================================
+    # ======================================================
     # PROJECT INFORMATION
-    # ==================================================
+    # ======================================================
 
-
-    project = estimate.get(
-        "project",
-        {}
-    )
-
-
-
-    quotation_number = (
-
-        "BQA-"
-
-        +
-
-        str(
-            random.randint(
-                1000,
-                9999
-            )
-        )
-
-    )
-
-
-
-    project_details = Table(
+    project_table = Table(
 
         [
 
-            [
-                "Quotation No",
-                quotation_number
-            ],
+            ["Quotation No", quotation_number],
 
-            [
-                "Date",
-                datetime.now().strftime(
-                    "%d %B %Y"
-                )
-            ],
+            ["Date", datetime.now().strftime("%d %B %Y")],
 
-            [
-                "Client",
-                client_name
-            ],
+            ["Client", client_name],
 
-            [
-                "Project",
-                project_name
-            ],
+            ["Project", project_name],
 
-            [
-                "County",
-                project.get(
-                    "county",
-                    ""
-                )
-            ],
+            ["County", project.get("County","")],
 
-            [
-                "House Type",
-                project.get(
-                    "house_type",
-                    ""
-                )
-            ],
+            ["Project Type", project.get("Project Type","")],
 
-            [
-                "Roof Type",
-                project.get(
-                    "roof_type",
-                    ""
-                )
-            ],
+            ["House Type", project.get("House Type","")],
 
-            [
-                "Wall Material",
-                project.get(
-                    "wall_material",
-                    ""
-                )
-            ]
+            ["Wall Material", project.get("Block Type","")],
+
+            ["Roof Type", project.get("Roof Type","")],
+
+            ["Bedrooms", str(project.get("Bedrooms",""))],
+
+            ["Length", str(project.get("Length",""))],
+
+            ["Width", str(project.get("Width",""))],
+
+            ["Wall Height", str(project.get("Wall Height",""))]
 
         ],
 
-        colWidths=[150,250]
+        colWidths=[140,290]
 
     )
 
-
-
-    project_details.setStyle(
+    project_table.setStyle(
 
         TableStyle([
 
-            (
-                "GRID",
-                (0,0),
-                (-1,-1),
-                0.5,
-                colors.black
-            ),
+            ("GRID",(0,0),(-1,-1),0.5,colors.grey),
 
-            (
-                "BACKGROUND",
-                (0,0),
-                (0,-1),
-                colors.lightgrey
-            )
+            ("BACKGROUND",(0,0),(0,-1),colors.lightgrey),
+
+            ("FONTNAME",(0,0),(0,-1),"Helvetica-Bold")
 
         ])
 
     )
 
-
-
-    elements.append(project_details)
+    elements.append(project_table)
 
     elements.append(
         Spacer(1,20)
-    )
-
-
-
-    # ==================================================
-    # BOQ
-    # ==================================================
-
+    )    # ======================================================
+    # BILL OF QUANTITIES
+    # ======================================================
 
     elements.append(
 
         Paragraph(
 
-            "<b>Bill of Quantities</b>",
+            "<b>BILL OF QUANTITIES (BOQ)</b>",
 
-            styles["Heading2"]
+            heading
 
         )
 
     )
 
-
+    elements.append(
+        Spacer(1, 8)
+    )
 
     boq_rows = [
 
         [
+            "Section",
             "Description",
-            "Quantity",
-            "Unit",
-            "Rate",
-            "Amount"
+            "Value"
         ]
 
     ]
 
+    sections = estimate.get(
+        "sections",
+        {}
+    )
 
+    for section_name, section in sections.items():
 
-    for item in estimate.get(
-        "boq",
-        []
-    ):
+        if not isinstance(section, dict):
+            continue
 
+        # ---------------------------------------
+        # Section Title
+        # ---------------------------------------
 
         boq_rows.append(
 
             [
-
-                item.get(
-                    "description",
-                    ""
-                ),
-
-                item.get(
-                    "quantity",
-                    ""
-                ),
-
-                item.get(
-                    "unit",
-                    ""
-                ),
-
-                f"{item.get('rate',0):,.2f}",
-
-                f"{item.get('amount',0):,.2f}"
-
+                section_name,
+                "",
+                ""
             ]
 
         )
 
+        for key, value in section.items():
 
+            if isinstance(value, (dict, list)):
+                continue
+
+            label = (
+
+                key
+                .replace("_", " ")
+                .title()
+
+            )
+
+            boq_rows.append(
+
+                [
+                    "",
+                    label,
+                    str(value)
+                ]
+
+            )
 
     boq_table = Table(
 
         boq_rows,
 
+        colWidths=[
+            120,
+            220,
+            120
+        ],
+
         repeatRows=1
 
     )
 
-
-
-    boq_table.setStyle(
-
-        TableStyle([
-
-            (
-                "GRID",
-                (0,0),
-                (-1,-1),
-                0.5,
-                colors.black
-            ),
-
-            (
-                "BACKGROUND",
-                (0,0),
-                (-1,0),
-                colors.darkblue
-            ),
-
-            (
-                "TEXTCOLOR",
-                (0,0),
-                (-1,0),
-                colors.white
-            )
-
-        ])
-
+    add_table_style(
+        boq_table
     )
 
-
-
-    elements.append(boq_table)
+    elements.append(
+        boq_table
+    )
 
     elements.append(
         Spacer(1,20)
     )
 
+    # ======================================================
+    # MATERIAL SUMMARY
+    # ======================================================
+
+    elements.append(
+
+        Paragraph(
+
+            "<b>MATERIAL SUMMARY</b>",
+
+            heading
+
+        )
+
+    )
+
+    elements.append(
+        Spacer(1,8)
+    )
+
+    material_rows = [
+
+        [
+            "Section",
+            "Material",
+            "Quantity"
+        ]
+
+    ]
+
+    materials = estimate.get(
+        "materials",
+        {}
+    )
+
+    for section_name, section in materials.items():
+
+        if not isinstance(section, dict):
+            continue
+
+        for material, quantity in section.items():
+
+            material_rows.append(
+
+                [
+
+                    section_name,
+
+                    material
+                    .replace("_"," ")
+                    .title(),
+
+                    str(quantity)
+
+                ]
+
+            )
+
+    if len(material_rows) == 1:
+
+        material_rows.append(
+
+            [
+
+                "-",
+
+                "No material data",
+
+                "-"
+
+            ]
+
+        )
+
+    material_table = Table(
+
+        material_rows,
+
+        colWidths=[
+            120,
+            220,
+            120
+        ],
+
+        repeatRows=1
+
+    )
+
+    add_table_style(
+        material_table
+    )
+
+    elements.append(
+        material_table
+    )
+
+    elements.append(
+        Spacer(1,20)
+    )
+
+    # ======================================================
+    # LABOUR SUMMARY
+    # ======================================================
+
+    elements.append(
+
+        Paragraph(
+
+            "<b>LABOUR SUMMARY</b>",
+
+            heading
+
+        )
+
+    )
+
+    elements.append(
+        Spacer(1,8)
+    )
+
+    labour_rows = [
+
+        [
+
+            "Section",
+
+            "Activity",
+
+            "Value"
+
+        ]
+
+    ]
+
+    labour = estimate.get(
+        "labour",
+        {}
+    )
+
+    for section_name, section in labour.items():
+
+        if not isinstance(section, dict):
+            continue
+
+        for activity, value in section.items():
+
+            labour_rows.append(
+
+                [
+
+                    section_name,
+
+                    activity
+                    .replace("_"," ")
+                    .title(),
+
+                    str(value)
+
+                ]
+
+            )
+
+    if len(labour_rows) == 1:
+
+        labour_rows.append(
+
+            [
+
+                "-",
+
+                "No labour data",
+
+                "-"
+
+            ]
+
+        )
+
+    labour_table = Table(
+
+        labour_rows,
+
+        colWidths=[
+            120,
+            220,
+            120
+        ],
+
+        repeatRows=1
+
+    )
+
+    add_table_style(
+        labour_table
+    )
+
+    elements.append(
+        labour_table
+    )
+
+    elements.append(
+        Spacer(1,20)
+    )    # ==================================================
+    # PROJECT INFORMATION
+    # ==================================================
+
+    project = estimate.get("project", {})
+
+    quotation_number = (
+        f"BQA-{datetime.now().strftime('%Y%m%d')}-{random.randint(1000,9999)}"
+    )
+
+    project_details = [
+        ["Quotation No.", quotation_number],
+        ["Date", datetime.now().strftime("%d %B %Y")],
+        ["Client", client_name],
+        ["Project", project_name],
+        ["County", project.get("County", "-")],
+        ["Project Type", project.get("Project Type", "-")],
+        ["House Type", project.get("House Type", "-")],
+        ["Wall Material", project.get("Block Type", "-")],
+        ["Roof Type", project.get("Roof Type", "-")],
+        ["Bedrooms", str(project.get("Bedrooms", "-"))]
+    ]
+
+    table = Table(project_details, colWidths=[160, 280])
+
+    table.setStyle(TableStyle([
+
+        ("GRID",(0,0),(-1,-1),0.5,colors.grey),
+
+        ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#E8F0FE")),
+
+        ("FONTNAME",(0,0),(0,-1),"Helvetica-Bold"),
+
+        ("BOTTOMPADDING",(0,0),(-1,-1),6)
+
+    ]))
+
+    elements.append(table)
+    elements.append(Spacer(1,18))
+
+
+    # ==================================================
+    # BILL OF QUANTITIES
+    # ==================================================
+
+    elements.append(
+        Paragraph(
+            "<b>Bill of Quantities (BOQ)</b>",
+            styles["Heading2"]
+        )
+    )
+
+    boq = estimate.get("boq", {})
+
+    boq_rows = [
+        [
+            "Section",
+            "Description",
+            "Amount"
+        ]
+    ]
+
+    if isinstance(boq, dict):
+
+        for section, values in boq.items():
+
+            amount = 0
+
+            if isinstance(values, dict):
+
+                amount = (
+                    values.get("subtotal")
+                    or values.get("total")
+                    or values.get("grand_total")
+                    or 0
+                )
+
+            boq_rows.append([
+
+                section,
+
+                section,
+
+                f"{currency} {amount:,.2f}"
+
+            ])
+
+    boq_table = Table(
+
+        boq_rows,
+
+        colWidths=[150,220,120],
+
+        repeatRows=1
+
+    )
+
+    boq_table.setStyle(TableStyle([
+
+        ("GRID",(0,0),(-1,-1),0.5,colors.black),
+
+        ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#0F4C81")),
+
+        ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+
+        ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+
+        ("ALIGN",(2,1),(2,-1),"RIGHT"),
+
+        ("BOTTOMPADDING",(0,0),(-1,0),8)
+
+    ]))
+
+    elements.append(boq_table)
+    elements.append(Spacer(1,20))
 
 
     # ==================================================
     # MATERIAL SUMMARY
     # ==================================================
-
 
     elements.append(
 
@@ -515,265 +751,424 @@ def generate_pdf(
 
     )
 
-
-
     material_rows = [
 
+        ["Section","Material","Quantity"]
+
+    ]
+
+    materials = estimate.get("materials", {})
+
+    for section, data in materials.items():
+
+        if not isinstance(data, dict):
+            continue
+
+        for item, qty in data.items():
+
+            material_rows.append([
+
+                section,
+
+                item.replace("_"," ").title(),
+
+                str(qty)
+
+            ])
+
+    if len(material_rows) == 1:
+
+        material_rows.append(["-","No Materials","-"])
+
+    material_table = Table(
+
+        material_rows,
+
+        colWidths=[150,220,120]
+
+    )
+
+    material_table.setStyle(TableStyle([
+
+        ("GRID",(0,0),(-1,-1),0.5,colors.black),
+
+        ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#1B5E20")),
+
+        ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+
+        ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold")
+
+    ]))
+
+    elements.append(material_table)
+    elements.append(Spacer(1,20))    # ==================================================
+    # LABOUR SUMMARY
+    # ==================================================
+
+    elements.append(
+        Paragraph(
+            "<b>Labour Summary</b>",
+            styles["Heading2"]
+        )
+    )
+
+    labour_rows = [
+        ["Section", "Activity", "Value"]
+    ]
+
+    labour = estimate.get("labour", {})
+
+    for section, data in labour.items():
+
+        if not isinstance(data, dict):
+            continue
+
+        for activity, value in data.items():
+
+            labour_rows.append([
+                section,
+                activity.replace("_", " ").title(),
+                str(value)
+            ])
+
+    if len(labour_rows) == 1:
+
+        labour_rows.append([
+            "-",
+            "No Labour Data",
+            "-"
+        ])
+
+    labour_table = Table(
+        labour_rows,
+        colWidths=[150, 220, 120]
+    )
+
+    labour_table.setStyle(TableStyle([
+
+        ("GRID", (0,0), (-1,-1), 0.5, colors.black),
+
+        ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#6A1B9A")),
+
+        ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+
+        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+
+        ("BOTTOMPADDING", (0,0), (-1,0), 8)
+
+    ]))
+
+    elements.append(labour_table)
+    elements.append(Spacer(1, 20))
+    # ==================================================
+    # COST SUMMARY
+    # ==================================================
+
+    elements.append(
+        Paragraph(
+            "<b>Project Cost Summary</b>",
+            styles["Heading2"]
+        )
+    )
+
+
+    material_cost = float(
+        estimate.get(
+            "material_cost",
+            0
+        )
+    )
+
+
+    labour_cost = float(
+        estimate.get(
+            "labour_cost",
+            0
+        )
+    )
+
+
+    equipment_cost = float(
+        estimate.get(
+            "equipment_cost",
+            0
+        )
+    )
+
+
+    subtotal = float(
+        estimate.get(
+            "subtotal",
+            material_cost + labour_cost + equipment_cost
+        )
+    )
+
+
+    vat_rate = company.get(
+        "vat_rate",
+        16
+    )
+
+
+    vat = float(
+        estimate.get(
+            "vat",
+            subtotal * vat_rate / 100
+        )
+    )
+
+
+    contingency_rate = company.get(
+        "contingency",
+        5
+    )
+
+
+    contingency = float(
+        estimate.get(
+            "contingency",
+            subtotal * contingency_rate / 100
+        )
+    )
+
+
+    grand_total = float(
+        estimate.get(
+            "grand_total",
+            subtotal + vat + contingency
+        )
+    )
+
+
+    cost_rows = [
+
         [
-            "Section",
-            "Details"
+            "Materials",
+            f"{currency} {material_cost:,.2f}"
+        ],
+
+        [
+            "Labour",
+            f"{currency} {labour_cost:,.2f}"
+        ],
+
+        [
+            "Equipment",
+            f"{currency} {equipment_cost:,.2f}"
+        ],
+
+        [
+            "Subtotal",
+            f"{currency} {subtotal:,.2f}"
+        ],
+
+        [
+            f"VAT ({vat_rate}%)",
+            f"{currency} {vat:,.2f}"
+        ],
+
+        [
+            f"Contingency ({contingency_rate}%)",
+            f"{currency} {contingency:,.2f}"
+        ],
+
+        [
+            "GRAND TOTAL",
+            f"{currency} {grand_total:,.2f}"
         ]
 
     ]
 
 
+    cost_table = Table(
+        cost_rows,
+        colWidths=[250,160]
+    )
 
-    for section,data in estimate.get(
-        "materials",
-        {}
-    ).items():
+
+    cost_table.setStyle(TableStyle([
+
+        ("GRID",(0,0),(-1,-1),0.5,colors.black),
+
+        ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#E8F0FE")),
+
+        ("BACKGROUND",(0,6),(-1,6),colors.HexColor("#FFF59D")),
+
+        ("FONTNAME",(0,6),(-1,6),"Helvetica-Bold"),
+
+        ("ALIGN",(1,0),(1,-1),"RIGHT")
+
+    ]))
 
 
-        material_rows.append(
+    elements.append(cost_table)
 
-            [
+    elements.append(
+        Spacer(1,25)
+    )
 
-                section,
+     # ==================================================
+    # SIGNATURE SECTION
+    # ==================================================
 
-                str(data)
-
-            ]
-
+    elements.append(
+        Paragraph(
+            "<b>Approval & Signatures</b>",
+            styles["Heading2"]
         )
-
-
-
-    material_table = Table(
-        material_rows
     )
 
+    signature_rows = [
 
-    material_table.setStyle(
+        [
+            "Prepared By",
+            "Client Approval"
+        ],
 
-        TableStyle([
+        [
+            "",
+            ""
+        ],
 
-            (
-                "GRID",
-                (0,0),
-                (-1,-1),
-                0.5,
-                colors.black
-            )
+        [
+            "________________________",
+            "________________________"
+        ],
 
-        ])
+        [
+            company.get(
+                "contractor",
+                company.get(
+                    "company_name",
+                    "BuildQuote AI"
+                )
+            ),
+            client_name
+        ]
+
+    ]
+
+    signature_table = Table(
+
+        signature_rows,
+
+        colWidths=[250, 250]
 
     )
 
+    signature_table.setStyle(TableStyle([
 
-    elements.append(material_table)
+        ("GRID",(0,0),(-1,-1),0.5,colors.grey),
+
+        ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#E8F0FE")),
+
+        ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+
+        ("BOTTOMPADDING",(0,0),(-1,0),8),
+
+        ("TOPPADDING",(0,1),(-1,-1),12)
+
+    ]))
+
+    elements.append(signature_table)
 
     elements.append(
         Spacer(1,20)
     )
 
 
-
     # ==================================================
-    # COST SUMMARY
+    # NOTES
     # ==================================================
-
-
-    subtotal = estimate.get(
-        "subtotal",
-        0
-    )
-
-
-    vat = estimate.get(
-        "vat",
-        subtotal * company.get(
-            "vat_rate",
-            16
-        ) / 100
-    )
-
-
-    contingency = estimate.get(
-        "contingency",
-        subtotal * company.get(
-            "contingency",
-            5
-        ) / 100
-    )
-
-
-
-    total = (
-
-        subtotal
-
-        +
-
-        vat
-
-        +
-
-        contingency
-
-    )
-
-
-
-    cost_table = Table(
-
-        [
-
-            [
-                "Subtotal",
-                f"{currency} {subtotal:,.2f}"
-            ],
-
-            [
-                "VAT",
-                f"{currency} {vat:,.2f}"
-            ],
-
-            [
-                "Contingency",
-                f"{currency} {contingency:,.2f}"
-            ],
-
-            [
-                "TOTAL PROJECT COST",
-                f"{currency} {total:,.2f}"
-            ]
-
-        ]
-
-    )
-
-
-
-    cost_table.setStyle(
-
-        TableStyle([
-
-            (
-                "GRID",
-                (0,0),
-                (-1,-1),
-                0.5,
-                colors.black
-            ),
-
-            (
-                "BACKGROUND",
-                (0,3),
-                (-1,3),
-                colors.lightgrey
-            )
-
-        ])
-
-    )
-
-
-    elements.append(cost_table)
-
-
-
-    elements.append(
-        Spacer(1,25)
-    )
-
-
-
-    # ==================================================
-    # SIGNATURE SECTION
-    # ==================================================
-
-
-    if company.get(
-        "show_signature",
-        True
-    ):
-
-
-        signature = Table(
-
-            [
-
-                [
-                    "Prepared By",
-                    "Client Approval"
-                ],
-
-                [
-                    "________________",
-                    "________________"
-                ],
-
-                [
-                    company.get(
-                        "contractor",
-                        "Contractor"
-                    ),
-
-                    client_name
-
-                ]
-
-            ]
-
-        )
-
-
-        signature.setStyle(
-
-            TableStyle([
-
-                (
-                    "GRID",
-                    (0,0),
-                    (-1,-1),
-                    0.5,
-                    colors.black
-                )
-
-            ])
-
-        )
-
-
-        elements.append(signature)
-
-
-
-    elements.append(
-
-        Spacer(1,15)
-
-    )
-
 
     elements.append(
 
         Paragraph(
 
-            f"""
+            "<b>Notes</b>",
 
-            Generated automatically by
-
-            {company.get('company_name','BuildQuote AI')}
-
-            """,
-
-            styles["Italic"]
+            styles["Heading2"]
 
         )
 
     )
 
+    notes = [
 
+        "• This quotation is valid for 30 days from the date of issue.",
+
+        "• Material prices are based on current market rates and may change without notice.",
+
+        "• Final costs may vary after site inspection, soil investigation and client variations.",
+
+        "• Construction shall comply with the Kenya Building Code and County Government regulations.",
+
+        "• Payments shall follow the agreed project milestones."
+
+    ]
+
+    for note in notes:
+
+        elements.append(
+            Paragraph(
+                note,
+                styles["Normal"]
+            )
+        )
+
+    elements.append(
+        Spacer(1,20)
+    )
+
+
+    # ==================================================
+    # FOOTER
+    # ==================================================
+
+    elements.append(
+        Paragraph(
+            "<b>Thank you for choosing "
+            f"{company.get('company_name','BuildQuote AI')}</b>",
+            styles["Heading2"]
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            company.get(
+                "tagline",
+                "Professional Construction Estimation & BOQ Services"
+            ),
+            styles["Italic"]
+        )
+    )
+
+    elements.append(
+        Spacer(1,10)
+    )
+
+    elements.append(
+        Paragraph(
+            f"""
+            Generated on {datetime.now().strftime('%d %B %Y at %I:%M %p')}<br/>
+            Contractor: {company.get('contractor','')}<br/>
+            Phone: {company.get('phone','')}<br/>
+            Email: {company.get('email','')}<br/>
+            Website: {company.get('website','')}<br/><br/>
+            <b>Generated Automatically by BuildQuote AI v2.0</b><br/>
+            © 2026 BuildQuote AI | Developed by Flavian Otieno
+            """,
+            styles["Normal"]
+        )
+    )
+
+
+    # ==================================================
+    # BUILD PDF
+    # ==================================================
 
     doc.build(elements)
+
+    return filename

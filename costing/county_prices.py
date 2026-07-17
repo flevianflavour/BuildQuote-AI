@@ -1,8 +1,9 @@
 """
 BuildQuote AI
+
 County Pricing Engine
 
-Loads county-specific material and labour rates from:
+Loads county-specific pricing from:
 
 data/county_prices.csv
 """
@@ -27,9 +28,19 @@ class CountyPricing:
 
         self.data.columns = self.data.columns.str.strip()
 
-        self.data["County"] = self.data["County"].str.strip()
+        self.data["County"] = (
+            self.data["County"]
+            .astype(str)
+            .str.strip()
+        )
 
-    # ------------------------------------------------
+        self.data["Item"] = (
+            self.data["Item"]
+            .astype(str)
+            .str.strip()
+        )
+
+    # -------------------------------------------------
 
     def get_counties(self):
 
@@ -37,113 +48,49 @@ class CountyPricing:
             self.data["County"].unique().tolist()
         )
 
-    # ------------------------------------------------
+    # -------------------------------------------------
 
     def get_rates(self, county):
 
-        row = self.data[
+        rows = self.data[
             self.data["County"].str.lower()
             ==
             county.lower()
         ]
 
-        if row.empty:
+        if rows.empty:
 
-            raise ValueError(
-                f"County '{county}' not found."
+            return {}
+
+        rates = {}
+
+        for _, row in rows.iterrows():
+
+            key = (
+                row["Item"]
+                .replace(" ", "_")
+                .replace("-", "_")
             )
 
-        row = row.iloc[0]
+            rates[key] = float(row["Rate"])
 
-        return {
+        return rates
 
-            # ==========================================
-            # FOUNDATION
-            # ==========================================
+    # -------------------------------------------------
 
-            "Excavation": row["Excavation"],
-            "Hardcore": row["Hardcore"],
-            "Blinding": row["Blinding"],
-            "Concrete": row["Concrete"],
+    def get_rate(
+        self,
+        county,
+        item,
+        default=0
+    ):
 
-            "Cement_Bag": row["Cement_Bag"],
-            "Sand_m3": row["Sand_m3"],
-            "Ballast_m3": row["Ballast_m3"],
+        rates = self.get_rates(county)
 
-            "Machine_Cut_Stone": row["Machine_Cut_Stone"],
-            "Quarry_Stone": row["Quarry_Stone"],
-
-            "Steel_kg": row["Steel_kg"],
-            "Binding_Wire_kg": row["Binding_Wire_kg"],
-
-            "DPC_m": row["DPC_m"],
-            "DPM_m2": row["DPM_m2"],
-            "Anti_Termite_m2": row["Anti_Termite_m2"],
-
-            # ==========================================
-            # ROOF
-            # ==========================================
-
-            "Timber": row["Timber"],
-            "Iron_Sheet": row["Iron_Sheet"],
-            "Ridge_Cap": row["Ridge_Cap"],
-            "Roof_Nails": row["Roof_Nails"],
-
-            # ==========================================
-            # FINISHES
-            # ==========================================
-
-            "Plaster": row["Plaster"],
-            "Paint": row["Paint"],
-            "Floor_Tile": row["Floor_Tile"],
-            "Ceiling_Board": row["Ceiling_Board"],
-
-            # ==========================================
-            # ELECTRICAL
-            # ==========================================
-
-            "Cable": row["Cable"],
-            "Conduit": row["Conduit"],
-            "Socket": row["Socket"],
-            "Switch": row["Switch"],
-            "Light": row["Light"],
-            "Distribution_Board": row["Distribution_Board"],
-
-            # ==========================================
-            # PLUMBING
-            # ==========================================
-
-            "Water_Pipe": row["Water_Pipe"],
-            "Waste_Pipe": row["Waste_Pipe"],
-            "Toilet": row["Toilet"],
-            "Wash_Basin": row["Wash_Basin"],
-            "Kitchen_Sink": row["Kitchen_Sink"],
-            "Shower_Mixer": row["Shower_Mixer"],
-            "Floor_Trap": row["Floor_Trap"],
-
-            # ==========================================
-            # DOORS & WINDOWS
-            # ==========================================
-
-            "External_Door": row["External_Door"],
-            "Internal_Door": row["Internal_Door"],
-            "Window": row["Window"],
-            "Frame": row["Frame"],
-            "Door_Lock": row["Door_Lock"],
-
-            # ==========================================
-            # LABOUR
-            # ==========================================
-
-            "Mason_Day": row["Mason_Day"],
-            "Fundi_Day": row["Fundi_Day"],
-            "Labourer_Day": row["Labourer_Day"],
-            "Carpenter_Day": row["Carpenter_Day"],
-            "Steel_Fixer_Day": row["Steel_Fixer_Day"],
-            "Electrician_Day": row["Electrician_Day"],
-            "Plumber_Day": row["Plumber_Day"]
-
-        }
+        return rates.get(
+            item.replace(" ", "_"),
+            default
+        )
 
 
 pricing = CountyPricing()

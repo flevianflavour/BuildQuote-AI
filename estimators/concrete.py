@@ -1,68 +1,65 @@
 class ConcreteCalculator:
 
     def __init__(
-
         self,
-
         volume,
-
         mix_ratio="1:2:3"
-
     ):
 
         self.volume = volume
-
         self.mix_ratio = mix_ratio
 
-    # -----------------------------------
-    # Cement
-    # -----------------------------------
+    # ==================================================
+    # MATERIAL CALCULATIONS
+    # ==================================================
 
     def cement_bags(self):
 
-        # Kenyan approximation:
-        # 1 m³ of 1:2:3 concrete
-        # ≈ 8 bags of cement
-
         return round(self.volume * 8)
-
-    # -----------------------------------
-    # Sand
-    # -----------------------------------
 
     def sand_wheelbarrows(self):
 
-        # 2 wheelbarrows per cement bag
-
-        return self.cement_bags() * 2
-
-    # -----------------------------------
-    # Ballast
-    # -----------------------------------
+        return round(self.cement_bags() * 2)
 
     def ballast_wheelbarrows(self):
 
-        # 3 wheelbarrows per cement bag
-
-        return self.cement_bags() * 3
-
-    # -----------------------------------
-    # Water
-    # -----------------------------------
+        return round(self.cement_bags() * 3)
 
     def water_litres(self):
 
-        # Approximately 30 litres per bag
+        return round(self.cement_bags() * 30)
 
-        return self.cement_bags() * 30
+    # ==================================================
+    # MATERIALS
+    # ==================================================
 
-    # -----------------------------------
-    # Summary
-    # -----------------------------------
+    def materials(self):
+
+        return {
+
+            "Concrete Volume (m³)": round(self.volume, 2),
+
+            "Cement Bags": self.cement_bags(),
+
+            "Sand Wheelbarrows": self.sand_wheelbarrows(),
+
+            "Ballast Wheelbarrows": self.ballast_wheelbarrows(),
+
+            "Water (Litres)": self.water_litres(),
+
+        }
+
+    # ==================================================
+    # SUMMARY
+    # ==================================================
 
     def summary(self):
 
         return {
+
+            "materials": self.materials(),
+
+            "mix_ratio": self.mix_ratio,
 
             "Concrete Volume": {
 

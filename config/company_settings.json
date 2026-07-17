@@ -1,0 +1,15 @@
+{
+    "company_name": "sony construction company",
+    "tagline": "AI Powered Construction Estimation & BOQ System",
+    "contractor": "flavour",
+    "registration": "4356",
+    "phone": "+254 759452797",
+    "email": "info@sonyconst.com",
+    "location": "Kenya",
+    "currency": "KES",
+    "vat_rate": 0.16,
+    "contingency": 5.0,
+    "show_logo": false,
+    "show_signature": true,
+    "show_vat": true
+}

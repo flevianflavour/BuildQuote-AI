@@ -1,49 +1,249 @@
+"""
+BuildQuote AI
+
+Quotation Service v3
+
+Generates professional quotation summary
+from the Master BOQ.
+"""
+
+
+
+
+
 class QuotationService:
 
-    def generate(self, project, estimate):
 
-        subtotal = (
-            estimate["block_cost"]
-            + estimate["cement_cost"]
-            + estimate["labour_cost"]
+
+    def generate(
+
+        self,
+
+        project,
+
+        estimate
+
+    ):
+
+
+
+        # =====================================
+        # COST SUMMARY
+        # =====================================
+
+
+        subtotal = estimate.get(
+
+            "subtotal",
+
+            0
+
         )
 
-        vat = subtotal * 0.16
 
-        total = subtotal + vat
+
+        vat = estimate.get(
+
+            "vat",
+
+            subtotal * 0.16
+
+        )
+
+
+
+        total = estimate.get(
+
+            "grand_total",
+
+            subtotal + vat
+
+        )
+
+
+
+
 
         print("\n")
 
-        print("=" * 50)
+        print("=" * 60)
 
-        print("              BUILDQUOTE AI")
+        print("                 BUILDQUOTE AI")
 
-        print("=" * 50)
+        print("          CONSTRUCTION QUOTATION")
 
-        print(f"Client   : {project.client_name}")
+        print("=" * 60)
 
-        print(f"Project  : {project.project_name}")
 
-        print(f"County   : {project.county}")
 
-        print("-" * 50)
+        print()
 
-        print("DESCRIPTION".ljust(20), "TOTAL")
+        print(f"Quotation No : {project.project_id}")
 
-        print("-" * 50)
+        print(f"Client       : {project.client_name}")
 
-        print(f"Blocks".ljust(20), f"KES {estimate['block_cost']:,}")
+        print(f"Project      : {project.project_name}")
 
-        print(f"Cement".ljust(20), f"KES {estimate['cement_cost']:,}")
+        print(f"County       : {project.county}")
 
-        print(f"Labour".ljust(20), f"KES {estimate['labour_cost']:,}")
+        print(f"Location     : {project.location}")
 
-        print("-" * 50)
 
-        print(f"Subtotal".ljust(20), f"KES {subtotal:,}")
 
-        print(f"VAT (16%)".ljust(20), f"KES {vat:,.0f}")
+        print("-" * 60)
 
-        print(f"TOTAL".ljust(20), f"KES {total:,.0f}")
 
-        print("=" * 50)
+
+        print(
+
+            "DESCRIPTION".ljust(30),
+
+            "AMOUNT"
+
+        )
+
+
+
+        print("-" * 60)
+
+
+
+
+
+        # =====================================
+        # SECTION BREAKDOWN
+        # =====================================
+
+
+        sections = estimate.get(
+
+            "construction_sections",
+
+            {}
+
+        )
+
+
+
+        for name, section in sections.items():
+
+
+            if isinstance(section, dict):
+
+
+                amount = section.get(
+
+                    "subtotal",
+
+                    section.get(
+
+                        "total",
+
+                        0
+
+                    )
+
+                )
+
+
+                print(
+
+                    name.ljust(30),
+
+                    f"KES {amount:,.2f}"
+
+                )
+
+
+
+
+
+        print("-" * 60)
+
+
+
+        print(
+
+            "SUBTOTAL".ljust(30),
+
+            f"KES {subtotal:,.2f}"
+
+        )
+
+
+
+        print(
+
+            "VAT (16%)".ljust(30),
+
+            f"KES {vat:,.2f}"
+
+        )
+
+
+
+        print(
+
+            "GRAND TOTAL".ljust(30),
+
+            f"KES {total:,.2f}"
+
+        )
+
+
+
+        print("=" * 60)
+
+
+
+        return {
+
+
+
+            "quotation_number":
+
+            project.project_id,
+
+
+
+            "client":
+
+            project.client_name,
+
+
+
+            "project":
+
+            project.project_name,
+
+
+
+            "county":
+
+            project.county,
+
+
+
+            "subtotal":
+
+            round(subtotal,2),
+
+
+
+            "vat":
+
+            round(vat,2),
+
+
+
+            "grand_total":
+
+            round(total,2),
+
+
+
+            "sections":
+
+            sections
+
+        }

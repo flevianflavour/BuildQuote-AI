@@ -1,37 +1,37 @@
-Material,Category,Unit,Price
-
-Cement,Civil,Bag,850
-
-Building Block,Masonry,Piece,75
-
-Machine Cut Stone,Masonry,Piece,65
-
-Sand,Civil,Ton,3500
-
-Ballast,Civil,Ton,3200
-
-Y8 Bar,Steel,Piece,780
-
-Y10 Bar,Steel,Piece,980
-
-Y12 Bar,Steel,Piece,1350
-
-Y16 Bar,Steel,Piece,2100
-
-Binding Wire,Steel,Roll,450
-
-Roof Sheet,Roofing,Piece,1450
-
-Timber 4x2,Roofing,Piece,850
-
-Ridge Cap,Roofing,Piece,750
-
-Paint 20L,Finishes,Tin,7800
-
-Primer 20L,Finishes,Tin,6200
-
-Tile 600x600,Finishes,Box,1950
-
-PVC Pipe 4",Plumbing,Piece,850
-
-Electrical Cable 2.5mm,Electrical,Roll,4200
+County,Item,Category,Unit,Price
+Mombasa,Cement,Civil,Bag,850
+Mombasa,Sand,Civil,m3,2500
+Mombasa,Ballast,Civil,m3,3200
+Mombasa,Machine_Cut_Stone,Masonry,Piece,65
+Mombasa,Quarry_Stone,Masonry,Piece,55
+Mombasa,Timber,Roofing,m3,65000
+Mombasa,Mabati,Roofing,Piece,950
+Mombasa,Tile,Roofing,Piece,1800
+Mombasa,Decra,Roofing,Piece,2500
+Mombasa,Concrete,Roofing,m3,3500
+Mombasa,Ridge_Cap,Roofing,Piece,850
+Mombasa,Roof_Nails,Roofing,Kg,350
+Mombasa,Cable,Electrical,Metre,180
+Mombasa,Conduit,Electrical,Metre,120
+Mombasa,Socket,Electrical,Piece,450
+Mombasa,Switch,Electrical,Piece,350
+Mombasa,Light,Electrical,Piece,800
+Mombasa,Distribution_Board,Electrical,Piece,8500
+Mombasa,Water_Pipe,Plumbing,Metre,250
+Mombasa,Waste_Pipe,Plumbing,Metre,450
+Mombasa,Toilet,Plumbing,Piece,12000
+Mombasa,Wash_Basin,Plumbing,Piece,6500
+Mombasa,Kitchen_Sink,Plumbing,Piece,8500
+Mombasa,Shower_Mixer,Plumbing,Piece,5500
+Mombasa,Floor_Trap,Plumbing,Piece,850
+Mombasa,External_Door,Doors,Piece,25000
+Mombasa,Internal_Door,Doors,Piece,12000
+Mombasa,Window,Doors,Piece,15000
+Mombasa,Frame,Doors,Piece,4500
+Mombasa,Door_Lock,Doors,Piece,2500
+Mombasa,Mason_Day,Labour,Day,1800
+Mombasa,Labourer_Day,Labour,Day,1200
+Mombasa,Carpenter_Day,Labour,Day,2200
+Mombasa,Fundi_Day,Labour,Day,1800
+Mombasa,Electrician_Day,Labour,Day,2500
+Mombasa,Plumber_Day,Labour,Day,2500

@@ -3,10 +3,43 @@ Mombasa,Work Item,Excavation,m3,950,QS Schedule,2026-07-13
 Mombasa,Work Item,Hardcore,m3,3400,QS Schedule,2026-07-13
 Mombasa,Work Item,Blinding,m3,14500,QS Schedule,2026-07-13
 Mombasa,Work Item,Concrete,m3,16000,QS Schedule,2026-07-13
-Mombasa,Material,Cement,Bag,880,Bamburi,2026-07-13
-Mombasa,Material,Sand,m3,2500,Local Supplier,2026-07-13
-Mombasa,Material,Ballast,m3,3200,Local Supplier,2026-07-13
-Mombasa,Labour,Mason,Day,1800,Standard Rate,2026-07-13
-Mombasa,Labour,Labourer,Day,1200,Standard Rate,2026-07-13
-Nairobi,Work Item,Excavation,m3,1100,QS Schedule,2026-07-13
-Nairobi,Material,Cement,Bag,920,Bamburi,2026-07-13
+
+Mombasa,Material,Cement_Bag,Bag,880,Bamburi,2026-07-13
+Mombasa,Material,Sand_m3,m3,2500,Local Supplier,2026-07-13
+Mombasa,Material,Ballast_m3,m3,3200,Local Supplier,2026-07-13
+Mombasa,Material,Machine_Cut_Stone,Piece,65,Local Supplier,2026-07-13
+Mombasa,Material,Quarry_Stone,Piece,55,Local Supplier,2026-07-13
+Mombasa,Material,Timber,m3,65000,Local Supplier,2026-07-13
+Mombasa,Material,Mabati,Piece,950,Mabati Mills,2026-07-13
+Mombasa,Material,Tile,Piece,1800,Roof Supplier,2026-07-13
+Mombasa,Material,Decra,Piece,2500,Roof Supplier,2026-07-13
+Mombasa,Material,Ridge_Cap,Piece,850,Roof Supplier,2026-07-13
+Mombasa,Material,Roof_Nails,Kg,350,Hardware,2026-07-13
+
+Mombasa,Electrical,Cable,Metre,180,Electrical Shop,2026-07-13
+Mombasa,Electrical,Conduit,Metre,120,Electrical Shop,2026-07-13
+Mombasa,Electrical,Socket,Piece,450,Electrical Shop,2026-07-13
+Mombasa,Electrical,Switch,Piece,350,Electrical Shop,2026-07-13
+Mombasa,Electrical,Light,Piece,800,Electrical Shop,2026-07-13
+Mombasa,Electrical,Distribution_Board,Piece,8500,Electrical Shop,2026-07-13
+
+Mombasa,Plumbing,Water_Pipe,Metre,250,Plumbing Shop,2026-07-13
+Mombasa,Plumbing,Waste_Pipe,Metre,450,Plumbing Shop,2026-07-13
+Mombasa,Plumbing,Toilet,Piece,12000,Plumbing Shop,2026-07-13
+Mombasa,Plumbing,Wash_Basin,Piece,6500,Plumbing Shop,2026-07-13
+Mombasa,Plumbing,Kitchen_Sink,Piece,8500,Plumbing Shop,2026-07-13
+Mombasa,Plumbing,Shower_Mixer,Piece,5500,Plumbing Shop,2026-07-13
+Mombasa,Plumbing,Floor_Trap,Piece,850,Plumbing Shop,2026-07-13
+
+Mombasa,Doors,External_Door,Piece,25000,Door Supplier,2026-07-13
+Mombasa,Doors,Internal_Door,Piece,12000,Door Supplier,2026-07-13
+Mombasa,Doors,Window,Piece,15000,Window Supplier,2026-07-13
+Mombasa,Doors,Frame,Piece,4500,Door Supplier,2026-07-13
+Mombasa,Doors,Door_Lock,Piece,2500,Door Supplier,2026-07-13
+
+Mombasa,Labour,Mason_Day,Day,1800,Standard Rate,2026-07-13
+Mombasa,Labour,Labourer_Day,Day,1200,Standard Rate,2026-07-13
+Mombasa,Labour,Carpenter_Day,Day,2200,Standard Rate,2026-07-13
+Mombasa,Labour,Fundi_Day,Day,1800,Standard Rate,2026-07-13
+Mombasa,Labour,Electrician_Day,Day,2500,Standard Rate,2026-07-13
+Mombasa,Labour,Plumber_Day,Day,2500,Standard Rate,2026-07-13
